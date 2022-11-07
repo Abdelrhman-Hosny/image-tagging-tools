@@ -1,5 +1,5 @@
 # image-tagging-tools
-Tools for tagging and cleaning up image datasets
+Tools for tagging and cleaning up image datasets\n
 OpenClip model used :: https://github.com/mlfoundations/open_clip
 
 ## Installation Of OpenClip
