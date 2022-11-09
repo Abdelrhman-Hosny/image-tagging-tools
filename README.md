@@ -17,3 +17,8 @@ pip install .
 ```
 pip install open_clip_torch
 ```
+## Installation Of ASCII Graph 
+```
+pip install ascii_graph
+```
+
