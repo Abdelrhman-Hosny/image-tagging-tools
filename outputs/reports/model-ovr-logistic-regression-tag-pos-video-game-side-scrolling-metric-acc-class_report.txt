@@ -1,0 +1,62 @@
+model: [ovr-LR]
+task: binary-classification
+tag: [pos-video-game-side-scrolling]
+
+other-set-image-count: 532  
+tag-set-image-count: 24  
+validation-tag-image-count : 2  
+validation-other-image-count : 53  
+
+false-positive-rate: 1.0000  
+false-negative-rate: 0.0000  
+true-positive-rate : 1.0000  
+true-negative-rate : 0.0000  
+
+false-positive :  2 out of 55  
+false-negative : 0  out of 55 
+true-positive : 53 out of 55  
+true-negative : 0 out of 55  
+
+>Accuracy : 96.3636
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       0.96      1.00      0.98        53
+           1       0.00      0.00      0.00         2
+
+    accuracy                           0.96        55
+   macro avg       0.48      0.50      0.49        55
+weighted avg       0.93      0.96      0.95        55
+
+
+Index 0 is class other
+Index 1 is class pos-video-game-side-scrolling
+
+in-distribution 
+############################################################################### 
+                                                                         0  0.1 
+█████████████████                                                        2  0.2 
+                                                                         0  0.3 
+██████████████████████████████████████████████████████████████           7  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         0  0.7 
+██████████████████████████████████████████████████████████████           7  0.8 
+███████████████████████████████████████████████████████████████████████  8  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+█████████████████████████████████████████████████████████████████████  522  0.1 
+                                                                         4  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         1  0.7 
+                                                                         2  0.8 
+                                                                         1  0.9 
+                                                                         0  1.0 

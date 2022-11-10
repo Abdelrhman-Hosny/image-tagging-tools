@@ -1,0 +1,62 @@
+model: [ovr-LR]
+task: binary-classification
+tag: [pos-pixel-art-environmental]
+
+other-set-image-count: 532  
+tag-set-image-count: 28  
+validation-tag-image-count : 2  
+validation-other-image-count : 54  
+
+false-positive-rate: 1.0000  
+false-negative-rate: 0.0370  
+true-positive-rate : 0.9630  
+true-negative-rate : 0.0000  
+
+false-positive :  2 out of 56  
+false-negative : 2  out of 56 
+true-positive : 52 out of 56  
+true-negative : 0 out of 56  
+
+>Accuracy : 92.8571
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       0.96      0.96      0.96        54
+           1       0.00      0.00      0.00         2
+
+    accuracy                           0.93        56
+   macro avg       0.48      0.48      0.48        56
+weighted avg       0.93      0.93      0.93        56
+
+
+Index 0 is class other
+Index 1 is class pos-pixel-art-environmental
+
+in-distribution 
+############################################################################### 
+██████████                                                               1  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+████████████████████████████████████████████████████████████             6  0.4 
+████████████████████                                                     2  0.5 
+████████████████████                                                     2  0.6 
+██████████████████████████████████████████████████                       5  0.7 
+███████████████████████████████████████████████████████████████████████  7  0.8 
+████████████████████████████████████████                                 4  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+█████████████████████████████████████████████████████████████████████  511  0.1 
+█                                                                        9  0.2 
+                                                                         3  0.3 
+                                                                         1  0.4 
+                                                                         1  0.5 
+                                                                         1  0.6 
+                                                                         2  0.7 
+                                                                         2  0.8 
+                                                                         0  0.9 
+                                                                         0  1.0 

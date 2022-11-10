@@ -1,0 +1,62 @@
+model: [ovr-LR]
+task: binary-classification
+tag: [pos-pixel-art]
+
+other-set-image-count: 532  
+tag-set-image-count: 33  
+validation-tag-image-count : 3  
+validation-other-image-count : 53  
+
+false-positive-rate: 1.0000  
+false-negative-rate: 0.0189  
+true-positive-rate : 0.9811  
+true-negative-rate : 0.0000  
+
+false-positive :  3 out of 56  
+false-negative : 1  out of 56 
+true-positive : 52 out of 56  
+true-negative : 0 out of 56  
+
+>Accuracy : 92.8571
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       0.95      0.98      0.96        53
+           1       0.00      0.00      0.00         3
+
+    accuracy                           0.93        56
+   macro avg       0.47      0.49      0.48        56
+weighted avg       0.89      0.93      0.91        56
+
+
+Index 0 is class other
+Index 1 is class pos-pixel-art
+
+in-distribution 
+############################################################################### 
+█████████████████████                                                    3  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+███████                                                                  1  0.4 
+██████████████                                                           2  0.5 
+█████████████████████████████████████████████████                        7  0.6 
+██████████████████████████████████████████                               6  0.7 
+██████████████████████████████████████████████████████████████████████  10  0.8 
+████████████████████████████                                             4  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+█████████████████████████████████████████████████████████████████████  487  0.1 
+█                                                                        9  0.2 
+                                                                         3  0.3 
+                                                                         7  0.4 
+                                                                         4  0.5 
+                                                                         3  0.6 
+                                                                         2  0.7 
+                                                                         3  0.8 
+                                                                         0  0.9 
+                                                                         0  1.0 

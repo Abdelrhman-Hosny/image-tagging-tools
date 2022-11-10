@@ -1,0 +1,62 @@
+model : [svm-ovo]
+task: binary-classification
+tag: [pos-environment]
+
+other-set-image-count: 532  
+tag-set-image-count: 19  
+validation-tag-image-count : 1  
+validation-other-image-count : 54  
+
+false-positive-rate: 1.0000  
+false-negative-rate: 0.0185  
+true-positive-rate : 0.9815  
+true-negative-rate : 0.0000  
+
+false-positive :  1 out of 55  
+false-negative : 1  out of 55 
+true-positive : 53 out of 55  
+true-negative : 0 out of 55  
+
+>Accuracy : 98.1818
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       0.98      0.98      0.98        54
+           1       0.00      0.00      0.00         1
+
+    accuracy                           0.96        55
+   macro avg       0.49      0.49      0.49        55
+weighted avg       0.96      0.96      0.96        55
+
+
+Index 0 is class other
+Index 1 is class pos-environment
+
+in-distribution 
+############################################################################### 
+███████████████████████████████████                                      2  0.1 
+█████████████████████████████████████████████████████                    3  0.2 
+█████████████████                                                        1  0.3 
+█████████████████                                                        1  0.4 
+███████████████████████████████████████████████████████████████████████  4  0.5 
+█████████████████                                                        1  0.6 
+███████████████████████████████████                                      2  0.7 
+███████████████████████████████████                                      2  0.8 
+█████████████████                                                        1  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+█████████████████████████████████████████████████████████████████████  517  0.1 
+█                                                                       13  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         0  0.7 
+                                                                         0  0.8 
+                                                                         0  0.9 
+                                                                         0  1.0 
