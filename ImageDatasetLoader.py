@@ -57,12 +57,13 @@ class ImageDatasetLoader:
         
         output_path = f"{file_name}-decompressed-tmp"
         
+        output_directory = os.path.join(root_path, output_path)
         #make sure the output dir is found or else create it. 
-        os.makedirs(output_path, exist_ok = True)
+        os.makedirs(output_directory, exist_ok = True)
 
-        patoolib.extract_archive(path, outdir = os.path.join(root_path, output_path))
+        patoolib.extract_archive(path, outdir = output_directory)
         
-        return output_path
+        return output_directory
 
     @staticmethod
     def load(dataset_path: str, recursive: bool = True, batch_size: int = 32) -> Iterator[list[Image.Image]]: 
