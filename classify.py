@@ -42,7 +42,9 @@ def main(folder_path):
     class_mapping_dict = {}
     # Loading all the models and mappings 
     for model_file in tqdm(os.listdir(MODEL_PATH)):
-    
+        if not model_file.endswith('pkl'):
+            continue
+        
         model_pkl_path = os.path.join(MODEL_PATH , model_file)
         model_name = model_file.split('.pkl')[0]
         
