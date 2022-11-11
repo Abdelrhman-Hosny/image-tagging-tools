@@ -7,20 +7,7 @@ import open_clip
 import torch
 from PIL import Image
 from tqdm import tqdm
-
-
-def clip_image_features(image_path , model , preprocess , device):
-    """ returns the features of the image using OpenClip"""    
-    with torch.no_grad():
-        image = preprocess(Image.open(image_path)).unsqueeze(0).to(device)
-        return model.encode_image(image).detach().numpy()
-
-
-def classify_image(image_path , classifier , mapper, 
-                  clip_model , preprocess , device):
-    """Returns the string of "tag" or "other" """
-    image_features = clip_image_features(image_path , clip_model , preprocess , device)
-    return mapper[str(classifier.predict(image_features)[0])]
+from helper_functions import *
 
 
 def main(folder_path):
@@ -35,7 +22,8 @@ def main(folder_path):
             return 
         os.system(f'unzip  {folder_path} -d {CURR_DIR}')
         folder_path = os.path.join(CURR_DIR , os.path.basename(os.path.normpath(folder_path)).split('.zip')[0])
-        
+    
+    clean_directory(folder_path)
     timestamp = datetime.datetime.now() # timrstampe for the folder 
     # create output folder with time stamp 
     image_tagging_folder_name = f'tagging_output_{timestamp.month}_{timestamp.day}_{timestamp.hour}_{timestamp.minute}'
@@ -81,11 +69,14 @@ def main(folder_path):
     # Looping over all the images in the folder
     for img_file in tqdm(os.listdir(folder_path)):
         img_file_path = os.path.join(folder_path , img_file) 
-        for model_name in models_dict:   
-            image_class = classify_image(img_file_path , models_dict[model_name] , 
+        for model_name in models_dict:
+            try :    
+                image_class = classify_image(img_file_path , models_dict[model_name] , 
                                         class_mapping_dict[model_name] , clip_model ,
                                         preprocess , device )
-            
+            except Exception as e:
+                print(f"[WARNING] Problem with file {img_file}")
+                continue
             model_type = model_name.split('-tag-')[0].split('model-')[1]
             tag_name = model_name.split('-tag-')[1]
 
@@ -104,7 +95,6 @@ def main(folder_path):
             # Creating the two folders for tag and other 
             os.makedirs(os.path.join(tag_name_out_folder ,class_mapping_dict[model_name]['0'].strip()) ,exist_ok=True)
             os.makedirs(os.path.join(tag_name_out_folder ,class_mapping_dict[model_name]['1'].strip()) ,exist_ok=True)
-
             out_folder = os.path.join(tag_name_out_folder , image_class.strip())
             # move the image to the output folder of it now
             if os.name == 'nt': # if it is windows server 
