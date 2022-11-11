@@ -65,7 +65,7 @@ class ImageDatasetLoader:
         return output_path
 
     @staticmethod
-    def load(dataset_path: str, recursive: bool = True) -> Iterator[Image.Image]: 
+    def load(dataset_path: str, recursive: bool = True, batch_size: int = 32) -> Iterator[list[Image.Image]]: 
         """loader for the given dataset path, it returns a generator 
         
         :param dataset_path: path of the dataset either it's an archive or a directory of images.
@@ -74,7 +74,7 @@ class ImageDatasetLoader:
                 and all its subdirectories
         :type recursive: bool
         :returns: an iterator of images in the folder. 
-        :rtype: Iterator[PIL.Image.Image]
+        :rtype: Iterator[list[PIL.Image.Image]]
         """
         
         archive_dataset = False 
@@ -86,20 +86,26 @@ class ImageDatasetLoader:
 
         dataset_files_paths = ImageDatasetLoader.__list_dir(image_dataset_folder_path, recursive)
         #loop over the files list of the folder. 
-        for index, file_path in enumerate(dataset_files_paths):
-
-            try: #try to open file path as image
-                image = None 
-                #it's the last element, as it's generator to avoid error when deleting the folder and the file is accessed by another process.
-                if archive_dataset and index == len(dataset_files_paths) - 1:
-                    image = Image.open(file_path).copy()
-                else: 
-                    image = Image.open(file_path)
-                
-                yield image #ok file is image
-            
-            except Exception: #file is not a valid image.  
-                continue
         
+        for chunk_pos in range(0, len(dataset_files_paths), batch_size):
+
+            files_chunk = dataset_files_paths[chunk_pos: min(chunk_pos + batch_size, len(dataset_files_paths))]
+            
+            last_chunk = (chunk_pos + batch_size >= len(dataset_files_paths))
+            
+            images = [] 
+            
+            for file_path in files_chunk: 
+                try: #try to open file path as image
+                    images.append(Image.open(file_path))
+                except Exception: #file is not a valid image.  
+                    continue
+            
+            #it's the last element, as it's generator to avoid error when deleting the folder and the file is accessed by another process.
+            if archive_dataset and last_chunk:
+                yield images.copy()
+            else: 
+                yield images
+
         if archive_dataset:
             shutil.rmtree(image_dataset_folder_path)
