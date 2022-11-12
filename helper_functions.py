@@ -72,3 +72,44 @@ def clean_directory(dir_path , only_sub_dir = False):
 
     if os.path.isdir(sub_dir):
       clean_directory(sub_dir)
+
+
+def from_prob_to_bin(prob):
+    """ We have 10 bins to put each probability output in it """   
+    if 0.0 <= prob <= 0.1 : 
+      return '0.1'
+    elif 0.1 < prob <= 0.2 : 
+      return '0.2'
+    elif 0.3 < prob < 0.4 : 
+      return '0.3'
+    elif 0.4 <= prob < 0.5 : 
+      return '0.4'
+    elif 0.5 <= prob < 0.6 : 
+      return '0.5'
+    elif 0.6 <= prob < 0.7 : 
+      return '0.6'
+    elif 0.7 <= prob < 0.8 : 
+      return '0.7'
+    elif 0.8 <= prob < 0.9 : 
+      return '0.8'
+    elif 0.9 <= prob < 1.0 : 
+      return '0.9'
+    elif prob == 1.0 : 
+      return '1.0' 
+
+def classify_image_bin(image_path , classifier , mapper,
+                       clip_model , preprocess , device):
+    """ Returns the name of the class and it's bin value  
+        returns : dict( 'tag' : 'bin_val' , 'other' : 'bin_val')
+    """    
+    image_features   = clip_image_features(image_path , clip_model , preprocess , device)
+    first_class_bin  = from_prob_to_bin(classifier.predict_proba(image_features)[0][0])
+    second_class_bin = from_prob_to_bin(classifier.predict_proba(image_features)[0][1])
+    return { mapper['0'].strip() : first_class_bin , 
+             mapper['1'].strip() : second_class_bin}
+
+
+    
+
+
+
