@@ -56,7 +56,7 @@ pip install -r requirements.txt
 
 
 * `directory` _[string]_ - _[required]_ - The source directory or zip file of the dataset containing the images. 
-* `model` _[string]_ - _[required]_ - The source pickle file for the model. see: [a relative link](./outputs/models)
+* `model` _[string]_ - _[required]_ - The source pickle file for the model. see: [models](./outputs/models)
 
 ## Example Usage
 >  `specific_classifier_bins.py` Usage:
