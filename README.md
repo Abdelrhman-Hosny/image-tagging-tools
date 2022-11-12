@@ -16,6 +16,8 @@ Given a `directory` (images directory or zip file) containing images, It classif
 
 ## Installation
 ```
+git clone https://github.com/kk-digital/image-tagging-tools.git
+cd image-tagging-tools
 pip install -r requirements.txt
 ```
 
@@ -49,6 +51,8 @@ Given a `model` (pickle file of a model), The path of the pickle file used to lo
 
 ## Installation
 ```
+git clone https://github.com/kk-digital/image-tagging-tools.git
+cd image-tagging-tools
 pip install -r requirements.txt
 ```
 
