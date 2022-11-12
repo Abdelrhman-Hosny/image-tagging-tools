@@ -77,39 +77,44 @@ def main(folder_path , model_file_path):
 
     # Looping over all the images in the folder
     for img_file in tqdm(os.listdir(folder_path)):
-        img_file_path = os.path.join(folder_path , img_file) 
-        try :    
-            class_bin_dict = classify_image_bin(img_file_path , models_dict[model_name] , 
-                                    class_mapping_dict[model_name] , clip_model ,
-                                    preprocess , device )
-        except Exception as e:
-            print(f"[WARNING] Problem with file {img_file}")
+        try :
+            img_file_path = os.path.join(folder_path , img_file) 
+            try :    
+                class_bin_dict = classify_image_bin(img_file_path , models_dict[model_name] , 
+                                        class_mapping_dict[model_name] , clip_model ,
+                                        preprocess , device )
+            except Exception as e:
+                print(f"[WARNING] Problem with file {img_file}")
+                continue
+            #model_type = model_name.split('-tag-')[0].split('model-')[1]
+            tag_name = model_name.split('-tag-')[1]
+
+            tag_name_out_folder = os.path.join(model_type_folder,f'{tag_name}-results')
+            os.makedirs(tag_name_out_folder  , exist_ok=True)
+            
+            os.makedirs(tag_name_out_folder , exist_ok = True) # creating the tag results folder 
+            # Creating the two folders for tag and other 
+            os.makedirs(os.path.join(tag_name_out_folder ,class_mapping_dict[model_name]['0'].strip()) ,exist_ok=True)
+            os.makedirs(os.path.join(tag_name_out_folder ,class_mapping_dict[model_name]['1'].strip()) ,exist_ok=True)
+            ## we have for example svm-->tag-results-->tag , other
+            classes = list(class_bin_dict.keys())
+            first_bin_out_folder  = os.path.join(tag_name_out_folder  , classes[0] , class_bin_dict[classes[0]]) # out for the first class bin
+            second_bin_out_folder = os.path.join(tag_name_out_folder  , classes[1] , class_bin_dict[classes[1]]) # out for the second class bin
+            
+            os.makedirs(first_bin_out_folder  , exist_ok=True) # create first bin folder 
+            os.makedirs(second_bin_out_folder , exist_ok=True) # Create second bin folder 
+
+            # move the image to the output folder of it now
+            if os.name == 'nt': # if it is windows server 
+                os.system(f'copy  {img_file_path} {first_bin_out_folder}')
+                os.system(f'copy  {img_file_path} {second_bin_out_folder}')
+            else: # Linux server 
+                os.system(f'cp -r {img_file_path} {first_bin_out_folder}')
+                os.system(f'cp -r {img_file_path} {second_bin_out_folder}')
+        
+        except Exception as e :
+            print(f"[ERROR] {e} in file {img_file}")
             continue
-        #model_type = model_name.split('-tag-')[0].split('model-')[1]
-        tag_name = model_name.split('-tag-')[1]
-
-        tag_name_out_folder = os.path.join(model_type_folder,f'{tag_name}-results')
-        os.makedirs(tag_name_out_folder  , exist_ok=True)
-        
-        os.makedirs(tag_name_out_folder , exist_ok = True) # creating the tag results folder 
-        # Creating the two folders for tag and other 
-        os.makedirs(os.path.join(tag_name_out_folder ,class_mapping_dict[model_name]['0'].strip()) ,exist_ok=True)
-        os.makedirs(os.path.join(tag_name_out_folder ,class_mapping_dict[model_name]['1'].strip()) ,exist_ok=True)
-        ## we have for example svm-->tag-results-->tag , other
-        classes = list(class_bin_dict.keys())
-        first_bin_out_folder  = os.path.join(tag_name_out_folder  , classes[0] , class_bin_dict[classes[0]]) # out for the first class bin
-        second_bin_out_folder = os.path.join(tag_name_out_folder  , classes[1] , class_bin_dict[classes[1]]) # out for the second class bin
-        
-        os.makedirs(first_bin_out_folder  , exist_ok=True) # create first bin folder 
-        os.makedirs(second_bin_out_folder , exist_ok=True) # Create second bin folder 
-
-        # move the image to the output folder of it now
-        if os.name == 'nt': # if it is windows server 
-            os.system(f'copy  {img_file_path} {first_bin_out_folder}')
-            os.system(f'copy  {img_file_path} {second_bin_out_folder}')
-        else: # Linux server 
-            os.system(f'cp -r {img_file_path} {first_bin_out_folder}')
-            os.system(f'cp -r {img_file_path} {second_bin_out_folder}')
     print('[INFO] Finished')
 
 if __name__ == '__main__':
