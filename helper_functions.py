@@ -80,6 +80,8 @@ def from_prob_to_bin(prob):
       return '0.1'
     elif 0.1 < prob <= 0.2 : 
       return '0.2'
+    elif 0.2 < prob <= 0.3:
+        return '0.3'
     elif 0.3 < prob < 0.4 : 
       return '0.3'
     elif 0.4 <= prob < 0.5 : 
@@ -103,8 +105,9 @@ def classify_image_bin(image_path , classifier , mapper,
         returns : dict( 'tag' : 'bin_val' , 'other' : 'bin_val')
     """    
     image_features   = clip_image_features(image_path , clip_model , preprocess , device)
-    first_class_bin  = from_prob_to_bin(classifier.predict_proba(image_features)[0][0])
-    second_class_bin = from_prob_to_bin(classifier.predict_proba(image_features)[0][1])
+    probs = classifier.predict_proba(image_features)
+    first_class_bin  = from_prob_to_bin(probs[0][0])
+    second_class_bin = from_prob_to_bin(probs[0][1])
     return { mapper['0'].strip() : first_class_bin , 
              mapper['1'].strip() : second_class_bin}
 
