@@ -69,10 +69,13 @@ class ImageDatasetProcessor:
         
         metadata = {
             'hash_id': ImageDatasetProcessor.__compute_blake2b(image), 
-            'image_size_bytes': os.stat(image_path).st_size, 
-            'path': image_path, 
-            'name': os.path.split(image.filename)[1], 
-            'type': image.format, 
+            'file_path': image_path, 
+            'file_name': os.path.split(image.filename)[1], 
+            'file_type': image.format,
+            'image_size_bytes': os.stat(image_path).st_size,
+            'image_resolution': image.size, 
+            'image_xsize': image.size[0], 
+            'image_ysize': image.size[1], 
         }
         
         return (metadata, image_id)
