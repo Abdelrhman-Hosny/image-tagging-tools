@@ -214,7 +214,9 @@ class ImageDatasetProcessor:
                 device if device is None else device.lower(), 
                 result_output_path
             )
-            
+        
+        process_pool.shutdown()
+        
         return 
 
 def process_image_dataset_cli(
