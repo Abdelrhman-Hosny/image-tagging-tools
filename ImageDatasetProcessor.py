@@ -145,9 +145,10 @@ class ImageDatasetProcessor:
                     
                     #update the metadata with the image embeddings.
                     metadata.update({
-                        'clip_model': clip_model, 
+                        'embeddings_type': 'CLIP', 
+                        'model': clip_model, 
                         'pretrained': pretrained,
-                        'clip_embeddings': images_embeddings[image_index].tolist(), 
+                        'embeddings_vector': images_embeddings[image_index].tolist(), 
                     })
                     
                     #hash of the image (BLAKE2b hash) is the key of the image data.  
