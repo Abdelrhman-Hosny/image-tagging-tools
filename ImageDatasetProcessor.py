@@ -191,6 +191,9 @@ class ImageDatasetProcessor:
         #make sure output directory is created 
         os.makedirs(result_output_path, exist_ok = True)
 
+        #the name of the file/dataset
+        dataset_name = os.path.splitext(os.path.split(dataset_path)[1])[0]
+
         #init the thread pool. 
         thread_pool = ThreadPoolExecutor(max_workers = num_threads)
         
@@ -203,6 +206,7 @@ class ImageDatasetProcessor:
         #load the image dataset. 
         images_loader = ImageDatasetLoader.load(dataset_path, recursive = True, batch_size = batch_size)
 
+        processed_images_count = 0 
         json_result = {}
 
         with torch.no_grad(): 
@@ -235,9 +239,12 @@ class ImageDatasetProcessor:
                             json_result[metadata['hash_id']]['image_tags'].append(tag)
                     else: 
                         json_result[metadata['hash_id']] = metadata
-        
-        #the name of the file/dataset
-        dataset_name = os.path.splitext(os.path.split(dataset_path)[1])[0]
+
+                    processed_images_count += 1
+                    
+                    if processed_images_count % 1000 == 0: 
+                        print(f"for dataset {dataset_name} finished processing {processed_images_count} images so far")
+
         #save the metadata of the dataset
         ImageDatasetProcessor.__save_dataset_metadata_json(json_result, result_output_path, dataset_name)
         #save the json file of hash to tags list.
