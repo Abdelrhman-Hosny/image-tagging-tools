@@ -203,9 +203,14 @@ class ImageDatasetProcessor:
         
         #load the CLIP model. 
         model, _, preprocess = open_clip.create_model_and_transforms(clip_model,pretrained = pretrained)
+        
+        images_loader = None
         #load the image dataset. 
-        images_loader = ImageDatasetLoader.load(dataset_path, recursive = True, batch_size = batch_size)
-
+        try: 
+            images_loader = ImageDatasetLoader.load(dataset_path, recursive = True, batch_size = batch_size)
+        except AssertionError as error: 
+            print(f"[Error] in dataset: {dataset_name} due to the error: {error}")
+    
         processed_images_count = 0 
         json_result = {}
 
