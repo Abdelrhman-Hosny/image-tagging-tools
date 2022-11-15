@@ -57,7 +57,7 @@ class ImageDatasetLoader:
         
         output_path = f"{file_name}-decompressed-tmp"
         
-        output_directory = os.path.join(root_path, output_path)
+        output_directory = os.path.join('./outputs/tmp', output_path)
         #make sure the output dir is found or else create it. 
         os.makedirs(output_directory, exist_ok = True)
 
