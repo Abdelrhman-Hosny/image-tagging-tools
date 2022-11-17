@@ -85,20 +85,22 @@ class ImageDatasetLoader:
             archive_dataset = True 
             image_dataset_folder_path = ImageDatasetLoader.__extract_archive(dataset_path)
             
-            #get all tags in the dataset. 
-            tags = [tag.lower() for tag in os.listdir(image_dataset_folder_path)]
-            
-            #make sure other-training and other-validation tags are available. 
-            error = False 
-            if "other-training" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-training"))) == 0:
-                error = "`other-training` folder should be contained in the dataset and not empty"
-            
-            if "other-validation" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-validation"))) == 0: 
-                error = "`other-validation` folder should be contained in the dataset and not empty"
+        #get all tags in the dataset. 
+        tags = [tag.lower() for tag in os.listdir(image_dataset_folder_path)]
+        
+        #make sure other-training and other-validation tags are available. 
+        
+        error = False 
+        if "other-training" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-training"))) == 0:
+            error = "`other-training` folder should be contained in the dataset and not empty"
+        
+        if "other-validation" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-validation"))) == 0: 
+            error = "`other-validation` folder should be contained in the dataset and not empty"
 
-            if error is not False: 
+        if  error is not False: 
+            if archive_dataset: 
                 shutil.rmtree(image_dataset_folder_path)
-                raise AssertionError(error)
+            raise AssertionError(error)
             
         
         dataset_files_paths = ImageDatasetLoader.__list_dir(image_dataset_folder_path, recursive)
