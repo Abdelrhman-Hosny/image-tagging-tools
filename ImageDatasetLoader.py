@@ -116,7 +116,7 @@ class ImageDatasetLoader:
                 try: #try to open file path as image
                     images.append(Image.open(file_path))
                 except Exception as error: #file is not a valid image.
-                    print(f"[WARNING]: image {file_path} was will be skipped due to the error {error}")
+                    print(f"[WARNING]: image {file_path} was be skipped due to the error {error}")
                     continue
             
             #it's the last element, as it's generator to avoid error when deleting the folder and the file is accessed by another process.
