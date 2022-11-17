@@ -265,7 +265,7 @@ class ImageDatasetProcessor:
         clip_model: str = 'ViT-B-32',
         pretrained: str = 'openai',
         batch_size: int = 32,
-        num_process: int = multiprocessing.cpu_count(),
+        num_process: int = 2,
         num_threads: int = 4,
         device: Union[str, None] = None,
         result_output_path: str = './outputs/clip-cache'
@@ -298,21 +298,8 @@ class ImageDatasetProcessor:
         #init the processes pool 
         process_pool = ProcessPoolExecutor(max_workers = num_process)
         
-        for dataset_path in datasets_paths: 
-            ImageDatasetProcessor.process_dataset(
-                dataset_path,
-                clip_model,
-                pretrained,
-                batch_size, 
-                num_threads,
-                device if device is None else device.lower(), 
-                result_output_path
-            )
-        
         # for dataset_path in datasets_paths: 
-        #     #start the datasets processing inside a separate process 
-        #     process_pool.submit(
-        #         ImageDatasetProcessor.process_dataset,
+        #     ImageDatasetProcessor.process_dataset(
         #         dataset_path,
         #         clip_model,
         #         pretrained,
@@ -321,6 +308,19 @@ class ImageDatasetProcessor:
         #         device if device is None else device.lower(), 
         #         result_output_path
         #     )
+        
+        for dataset_path in datasets_paths: 
+            #start the datasets processing inside a separate process 
+            process_pool.submit(
+                ImageDatasetProcessor.process_dataset,
+                dataset_path,
+                clip_model,
+                pretrained,
+                batch_size, 
+                num_threads,
+                device if device is None else device.lower(), 
+                result_output_path
+            )
         
         process_pool.shutdown()
         
@@ -332,7 +332,7 @@ def process_image_dataset_cli(
     clip_model: str = 'ViT-B-32',
     pretrained: str = 'openai',
     batch_size: int = 32,
-    num_process: int = multiprocessing.cpu_count(),
+    num_process: int = 2,
     num_threads: int = 4,
     device: Union[str, None] = None, 
     result_output_path: str = './outputs/clip-cache'
