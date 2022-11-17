@@ -113,7 +113,7 @@ class ImageDatasetProcessor:
                 if tag not in tag_to_hash_list: 
                     tag_to_hash_list[tag] = []
                 
-                tag_to_hash_list.append(image_hash)
+                tag_to_hash_list[tag].append(image_hash)
             
             
         ImageDatasetProcessor.__write_to_json(tag_to_hash_list, output_path)
@@ -239,7 +239,7 @@ class ImageDatasetProcessor:
                     
                     #hash of the image (BLAKE2b hash) is the key of the image data.
                     if metadata['hash_id'] in json_result:
-                        tag = metadata['image_tag']
+                        tag = metadata['image_tags'][0]
                         if tag not in json_result[metadata['hash_id']]['image_tags']: 
                             json_result[metadata['hash_id']]['image_tags'].append(tag)
                     else: 
@@ -298,11 +298,8 @@ class ImageDatasetProcessor:
         #init the processes pool 
         process_pool = ProcessPoolExecutor(max_workers = num_process)
         
-        
         for dataset_path in datasets_paths: 
-            #start the datasets processing inside a separate process 
-            process_pool.submit(
-                ImageDatasetProcessor.process_dataset,
+            ImageDatasetProcessor.process_dataset(
                 dataset_path,
                 clip_model,
                 pretrained,
@@ -311,6 +308,19 @@ class ImageDatasetProcessor:
                 device if device is None else device.lower(), 
                 result_output_path
             )
+        
+        # for dataset_path in datasets_paths: 
+        #     #start the datasets processing inside a separate process 
+        #     process_pool.submit(
+        #         ImageDatasetProcessor.process_dataset,
+        #         dataset_path,
+        #         clip_model,
+        #         pretrained,
+        #         batch_size, 
+        #         num_threads,
+        #         device if device is None else device.lower(), 
+        #         result_output_path
+        #     )
         
         process_pool.shutdown()
         
