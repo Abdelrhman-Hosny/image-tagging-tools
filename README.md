@@ -27,7 +27,9 @@ python src/to/dir/train.py --metadata_json = '/src/to/dir/pixel-art-tagged-metad
 ```
 
 > Note that if the `output` is not created the script automatically creates it for you. 
-> Note that if the `test_per` is not created the script will make test set ~= 10% of the dataset
+
+
+> Note that if the `test_per` is not created the script will make test set ~= 10% of the dataset.
 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
