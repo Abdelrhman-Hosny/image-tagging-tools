@@ -1,75 +1,33 @@
-# image-tagging-tools
-Tools for Tagging and Cleaning Up Image Datasets.
+# train.py
+> A script for training classification models based on `pixel-art-tagged-tag-to-image-hash-list.json` file and `pixel-art-tagged-metadata.json` file.
 
-OpenClip model used :: https://github.com/mlfoundations/open_clip
-
-# Classification 
-> `classify.py` : a script for classifying images using binary classifiers and output all the results to it's class folder.
-                  Loops on all the models.
-                  
-> `classify_bins.py` : a script for classifying images using binary classifiers and output all the results to it's class bin folder.
-                       Loops on all the models.
-                  
 ## Tool Description
 
-Given a `directory` (images directory or zip file) containing images, It classifies the images in this directory and put the result in image_tagging output folder.   
+Given a `metadata` json file containing embeddings for images and `tag-to-image-hash` json file containing images' hash with tags, the script start to make for every tag two binary classification models and save it in output folder.
 
 ## Installation
+All that's needed to start using train.py is to install the dependencies using the command
 ```
-git clone https://github.com/kk-digital/image-tagging-tools.git
-cd image-tagging-tools
-pip install -r requirements.txt
+pip install -r src/to/dir/requirements.txt
 ```
 
 ## CLI Parameters
 
 
-* `directory` _[string]_ - _[required]_ - The source directory or zip file of the dataset containing the images. 
+* `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file. 
+* `tag_to_hash_json` _[string]_ - _[required]_ - The path to tag-to-hash json file. 
+
+* `output` _[string]_ - _[optional]_ - The path to the output directory.
+* `test_per` _[float]_ - _[optional]_ - The percentage of the test images from the dataset, default = 0.1 
 
 ## Example Usage
->  `classify.py` Usage:
 
 ```
-python classify.py --directory path/to/directory-or-zip-file
+python src/to/dir/train.py --metadata_json = '/src/to/dir/pixel-art-tagged-metadata.json' --tag_to_hash_json= '/src/to/dir/pixel-art-tagged-tag-to-image-hash-list.json'
 ```
 
->  `classify_bins.py` Usage:
+> Note that if the `output` is not created the script automatically creates it for you. 
+> Note that if the `test_per` is not created the script will make test set ~= 10% of the dataset
 
-```
-python classify_bins.py --directory path/to/directory-or-zip-file
-```
-
-# Classification Using Single Model 
-
-> `specific_classifier_bins.py` : a script for classifying images using binary classifier and output all the results to it's class folder with bins sub-folders.
-                  
-                           
-## Tool Description
-
-Given a `directory` (images directory or zip file) containing images, It classifies the images in this directory and put the result in image_tagging output folder.   
-Given a `model` (pickle file of a model), The path of the pickle file used to load the model for classifiction. see :    
-
-## Installation
-```
-git clone https://github.com/kk-digital/image-tagging-tools.git
-cd image-tagging-tools
-pip install -r requirements.txt
-```
-
-## CLI Parameters
-
-
-* `directory` _[string]_ - _[required]_ - The source directory or zip file of the dataset containing the images. 
-* `model` _[string]_ - _[required]_ - The source pickle file for the model. see: [models](./outputs/models)
-
-## Example Usage
->  `specific_classifier_bins.py` Usage:
-
-```
-python specific_classifier_bins.py --directory path/to/directory-or-zip-file  --model /path/to/model_pickle_file.pkl
-```
-
-
-
-
+Also you may call `--help` to see the options and their defaults in the cli. 
 
