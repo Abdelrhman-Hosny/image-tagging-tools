@@ -65,7 +65,7 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
-        output_path = os.path.join(output_path, f"{dataset_name}-metadata.json")
+        output_path = os.path.join(output_path, "input-metadata.json")
         ImageDatasetProcessor.__write_to_json(json_result, output_path)
 
     @staticmethod
@@ -81,7 +81,7 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
-        output_path = os.path.join(output_path, f"{dataset_name}-image-hash-to-tag-list.json")
+        output_path = os.path.join(output_path, "input-image-hash-to-tag-list.json")
         hash_to_tag_list = {} 
         
         for image_hash, metadata in json_result.items(): 
@@ -103,7 +103,7 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
-        output_path = os.path.join(output_path, f"{dataset_name}-tag-to-image-hash-list.json")
+        output_path = os.path.join(output_path, "input-tag-to-image-hash-list.json")
         tag_to_hash_list = {} 
         
         for image_hash, metadata in json_result.items():
@@ -160,18 +160,20 @@ class ImageDatasetProcessor:
     @staticmethod
     def process_dataset(
         dataset_path: str,
+        output_folder: str,
         clip_model: str = 'ViT-B-32',
         pretrained: str = 'openai',
         batch_size: int = 32,
         num_threads: int = 4,
         device: Union[str, None] = None, 
-        result_output_path: str = './outputs/clip-cache'
     ) -> None: 
         """process a datasets of images (directory of images or an archived dataset), and computes its metadata 
-            along with its CLIP embeddings and writes the result into a JSON file into `result_output_path`
+            along with its CLIP embeddings and writes the result into a JSON file into `output_folder`
             
         :param dataset_path: path of the dataset whatever it's an archive or a directory of images. 
         :type dataset_path: str
+        :param output_folder: path to the directory where to save the files into it. 
+        :type output_folder: str
         :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
         :type clip_model: str
         :param pretrained: the pre-trained model to be used for CLIP, default is `'openai'`
@@ -182,14 +184,12 @@ class ImageDatasetProcessor:
         :type num_threads: int
         :param device: the device to be used in computing the CLIP embeddings, if `None` is provided then `cuda` will be used if available, default is `None`
         :type device: Union[str, None]
-        :param result_output_path: the path in which the tool write the resulted JSON files, default is `./outputs/clip-cache`
-        :type result_output_path: str
-        :returns: process the provided dataset and write the result into `{result_output_path}/{dataset-name}.json`
+        :returns: process the provided dataset and write the result into `output_folder`
         :rtype: None
         """
         
         #make sure output directory is created 
-        os.makedirs(result_output_path, exist_ok = True)
+        os.makedirs(output_folder, exist_ok = True)
 
         #the name of the file/dataset
         dataset_name = os.path.splitext(os.path.split(dataset_path)[1])[0]
@@ -248,127 +248,99 @@ class ImageDatasetProcessor:
                     processed_images_count += 1
                     
                     if processed_images_count % 1000 == 0: 
-                        print(f"for dataset {dataset_name} finished processing {processed_images_count} images so far")
+                        print(f"[INFO] dataset {dataset_name} finished processing {processed_images_count} images so far")
 
         #save the metadata of the dataset
-        ImageDatasetProcessor.__save_dataset_metadata_json(json_result, result_output_path, dataset_name)
+        ImageDatasetProcessor.__save_dataset_metadata_json(json_result, output_folder, dataset_name)
         #save the json file of hash to tags list.
-        ImageDatasetProcessor.__save_hash_to_tags_list_json(json_result, result_output_path, dataset_name)
+        ImageDatasetProcessor.__save_hash_to_tags_list_json(json_result, output_folder, dataset_name)
         #save the json file of tags to images hash list. 
-        ImageDatasetProcessor.__save_tags_to_images_hash_list_json(json_result, result_output_path, dataset_name)
+        ImageDatasetProcessor.__save_tags_to_images_hash_list_json(json_result, output_folder, dataset_name)
                 
         thread_pool.shutdown() #make sure all threads were terminated. 
 
     @staticmethod
     def process(
-        datasets_paths: list[str],
+        input_folder: str,
+        output_folder: str,
         clip_model: str = 'ViT-B-32',
         pretrained: str = 'openai',
         batch_size: int = 32,
-        num_process: int = 2,
         num_threads: int = 4,
         device: Union[str, None] = None,
-        result_output_path: str = './outputs/clip-cache'
     ) -> None: 
-        """process a list of datasets of images (paths to directory of images or an archived dataset), and computes the 
-        images metadata along with its CLIP embeddings and writes the result into a JSON file into `result_output_path`
+        """process a directory of images (paths to directory of images or an archived dataset), and computes the 
+    images metadata along with its CLIP embeddings and writes the result into a JSON file into `output_folder`
             
-        :param datasets_paths: list of paths of the dataset whatever it's an archive or a directory of images. 
-        :type datasets_paths: list[str]
+        :param input_folder: path to the directory containing sub-folders of each tag. 
+        :type input_folder: str
+        :param output_folder: path to the directory where to save the files into it. 
+        :type output_folder: str
         :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
         :type clip_model: str
         :param pretrained: the pre-trained model to be used for CLIP, default is `'openai'`
         :type pretrained: str
         :param batch_size: number of images to process at a time, default is `32`. 
         :type batch_size: int
-        :param num_process: the number to be used in this process, default is `4`
-        :type num_process: int
         :param num_threads: the number to be used in this process, default is `4`
         :type num_threads: int
         :param device: the device to be used in computing the CLIP embeddings, if `None` is provided then `cuda` will be used if available, default is `None`
         :type device: Union[str, None]
-        :param result_output_path: the path in which the tool write the resulted JSON files, default is `./outputs/clip-cache`
-        :type result_output_path: str
-        :returns: process the provided dataset and write the result into `{result_output_path}/{dataset-name}.json`
+        :returns: process the provided dataset and write the result into `output_folder`
         :rtype: None
         """
         
         #make sure result output path exists 
-        os.makedirs(result_output_path, exist_ok = True)
-        #init the processes pool 
-        process_pool = ProcessPoolExecutor(max_workers = num_process)
-        
-        # for dataset_path in datasets_paths: 
-        #     ImageDatasetProcessor.process_dataset(
-        #         dataset_path,
-        #         clip_model,
-        #         pretrained,
-        #         batch_size, 
-        #         num_threads,
-        #         device if device is None else device.lower(), 
-        #         result_output_path
-        #     )
-        
-        for dataset_path in datasets_paths: 
-            #start the datasets processing inside a separate process 
-            process_pool.submit(
-                ImageDatasetProcessor.process_dataset,
-                dataset_path,
-                clip_model,
-                pretrained,
-                batch_size, 
-                num_threads,
-                device if device is None else device.lower(), 
-                result_output_path
-            )
-        
-        process_pool.shutdown()
-        
+        os.makedirs(output_folder, exist_ok = True)
+
+        ImageDatasetProcessor.process_dataset(
+            input_folder,
+            output_folder,
+            clip_model,
+            pretrained,
+            batch_size, 
+            num_threads,
+            device if device is None else device.lower(), 
+        )
+                
         return 
 
 def process_image_dataset_cli(
-    datasets_paths: Union[list[str], str],
-    directory_of_datasets: bool = False,
+    input_folder: str,
+    output_folder: str, 
     clip_model: str = 'ViT-B-32',
     pretrained: str = 'openai',
     batch_size: int = 32,
-    num_process: int = 2,
     num_threads: int = 4,
     device: Union[str, None] = None, 
-    result_output_path: str = './outputs/clip-cache'
 ) -> None: 
-    """process a list of datasets of images (paths to directory of images or an archived dataset), and computes the 
-    images metadata along with its CLIP embeddings and writes the result into a JSON file into `result_output_path`
+    """process a directory of images (paths to directory of images or an archived dataset), and computes the 
+    images metadata along with its CLIP embeddings and writes the result into a JSON file into `output_folder`
         
-    :param datasets_paths: list of paths of the datasets whatever it's an archive or a directory of images, or a directory full 
-                of datasets if `directory_of_datasets` is set to `True`
-    :type datasets_paths: Union[list[str], str]
-    :param directory_of_datasets: if a directory full of datasets is provided or a list of datasets paths, default is `False`
-    :type directory_of_datasets: bool 
+    :param input_folder: path to the directory containing sub-folders of each tag. 
+    :type input_folder: str
+    :param output_folder: path to the directory where to save the files into it. 
+    :type output_folder: str
     :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
     :type clip_model: str
     :param pretrained: the pre-trained model to be used for CLIP, default is `'openai'`
     :type pretrained: str
     :param batch_size: number of images to process at a time, default is `32`. 
     :type batch_size: int
-    :param num_process: the number to be used in this process, default is `4`
-    :type num_process: int
     :param num_threads: the number to be used in this process, default is `4`
     :type num_threads: int
     :param device: the device to be used in computing the CLIP embeddings, if `None` is provided then `cuda` will be used if available, default is `None`
     :type device: Union[str, None]
-    :param result_output_path: the path in which the tool write the resulted JSON files, default is `./outputs/clip-cache`
-    :type result_output_path: str
-    :returns: process the provided dataset and write the result into `{result_output_path}/{dataset-name}.json`
+    :returns: process the provided dataset and write the result into `output_folder`
     :rtype: None
     """
     
-    #check if the provided path is for a directory of datasets or a list of datasets paths. 
-    if directory_of_datasets: 
-        if type(datasets_paths) == str:
-            datasets_paths = [os.path.join(datasets_paths, path) for path in os.listdir(datasets_paths)]
-        else: 
-            raise TypeError("you should provide a single path as a string of directory full of datasets")
+    # #check if the provided path is for a directory of datasets or a list of datasets paths. 
+    # if directory_of_datasets: 
+    #     if type(datasets_paths) == str:
+    #         datasets_paths = [os.path.join(datasets_paths, path) for path in os.listdir(datasets_paths)]
+    #     else: 
+    #         raise TypeError("you should provide a single path as a string of directory full of datasets")
     
     #check if the provided device are one of the following "cuda", "cpu" or None
     if not (device is None or (type(device) == str and device.lower() in ["cuda",  "cpu"])):
@@ -376,14 +348,13 @@ def process_image_dataset_cli(
     
     #start processing the datasets. 
     ImageDatasetProcessor.process(
-        datasets_paths, 
+        input_folder,
+        output_folder,
         clip_model, 
         pretrained, 
         batch_size, 
-        num_process, 
         num_threads, 
         device if device is None else device.lower(),
-        result_output_path,
     )
 
      
