@@ -84,7 +84,25 @@ class ImageDatasetLoader:
         if ImageDatasetLoader.__is_archive(dataset_path):
             archive_dataset = True 
             image_dataset_folder_path = ImageDatasetLoader.__extract_archive(dataset_path)
+            
+        #get all tags in the dataset. 
+        tags = [tag.lower() for tag in os.listdir(image_dataset_folder_path)]
+        
+        #make sure other-training and other-validation tags are available. 
+        
+        error = False 
+        if "other-training" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-training"))) == 0:
+            error = "`other-training` folder should be contained in the dataset and not empty"
+        
+        if "other-validation" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-validation"))) == 0: 
+            error = "`other-validation` folder should be contained in the dataset and not empty"
 
+        if  error is not False: 
+            if archive_dataset: 
+                shutil.rmtree(image_dataset_folder_path)
+            raise AssertionError(error)
+            
+        
         dataset_files_paths = ImageDatasetLoader.__list_dir(image_dataset_folder_path, recursive)
         #loop over the files list of the folder. 
         
@@ -100,7 +118,7 @@ class ImageDatasetLoader:
                 try: #try to open file path as image
                     images.append(Image.open(file_path))
                 except Exception as error: #file is not a valid image.
-                    print(f"[WARNING]: image {file_path} was will be skipped due to the error {error}")
+                    print(f"[WARNING]: image {file_path} was be skipped due to the error {error}")
                     continue
             
             #it's the last element, as it's generator to avoid error when deleting the folder and the file is accessed by another process.
