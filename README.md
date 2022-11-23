@@ -59,11 +59,11 @@ pip install -r src/to/dir/requirements.txt
 ## Example Usage
 
 ```
-python src/to/dir/train.py --metadata_json  '/src/to/dir/pixel-art-metadata.json' --directory  /src/to/dir/images_directory 
+python src/to/dir/classify.py --metadata_json  '/src/to/dir/pixel-art-metadata.json' --directory  /src/to/dir/images_directory 
 ```
 
 ```
-python src/to/dir/train.py --metadata_json  '/src/to/dir/pixel-art-metadata.json' \
+python src/to/dir/classify.py --metadata_json  '/src/to/dir/pixel-art-metadata.json' \
                           --directory  /src/to/dir/images_directory 
                           --output /src/to/output_dir
                           --output_bins 10
