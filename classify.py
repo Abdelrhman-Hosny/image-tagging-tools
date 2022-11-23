@@ -49,8 +49,8 @@ def main(
 
     # Get CLIP model, to calculate CLIP embeddings if it's not in .json metadata file.
     clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
-
-    model_path = os.path.join(os.getcwd(),'outputs','models') if model_path is None else model_path
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    model_path = os.path.join(dir_path,'outputs','models') if model_path is None else model_path
     models_dict = create_models_dict(model_path)
     
     bins_array = get_bins_array(bins_number) 
