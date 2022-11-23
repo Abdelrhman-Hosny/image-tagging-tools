@@ -64,10 +64,10 @@ python src/to/dir/classify.py --metadata_json  '/src/to/dir/pixel-art-metadata.j
 
 ```
 python src/to/dir/classify.py --metadata_json  '/src/to/dir/pixel-art-metadata.json' \
-                          --directory  /src/to/dir/images_directory 
-                          --output /src/to/output_dir
-                          --output_bins 10
-                          --model /src/to/models_dir
+                              --directory  /src/to/dir/images_directory 
+                              --output /src/to/output_dir
+                              --output_bins 10
+                              --model /src/to/models_dir
 ```
 
 
