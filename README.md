@@ -35,7 +35,7 @@ Also you may call `--help` to see the options and their defaults in the cli.
 
 
 # classify.py
-> A script for classification models inference given images' `directory` or .zip file and `pixel-art-metadata.json` file.
+> A script for classification models inference given images' `directory` or .zip file and `metadata_json` .json file.
 
 ## Tool Description
 
