@@ -128,20 +128,6 @@ def compute_blake2b(image: Image.Image):
     
     return hashlib.blake2b(image.tobytes()).hexdigest()
 
-def unzip_folder(folder_path :str, curr_dir:str):
-    """takes an archived file path and unzip it.
-    :param folder_path: path to the archived file.
-    :type folder_path: str
-    :param curr_dir: current directory, to put the extracted folder in.
-    :type curr_dir: str    
-    :returns: path of the new exracted folder 
-    :rtype: str
-    """
-    print("[INFO] Extracting the archived file...")
-    patoolib.extract_archive(folder_path, outdir=curr_dir)
-    print("[INFO] Extraction completed.")
-
-    return os.path.join(os.path.join(curr_dir , os.path.basename(os.path.normpath(folder_path)).split('.zip')[0]))
 
 def make_dir(dir_names : Union[List[str] , str]):
     """takes a list of strings or a string and make a directory based on it.
@@ -170,6 +156,24 @@ def make_dir(dir_names : Union[List[str] , str]):
 
     os.makedirs(final_dir , exist_ok=True)
     return final_dir
+
+
+def unzip_folder(folder_path :str):
+    """takes an archived file path and unzip it.
+    :param folder_path: path to the archived file.
+    :type folder_path: str
+    :returns: path of the new exracted folder 
+    :rtype: str
+    """
+    dir_path  = os.path.dirname(folder_path)
+    file_name = os.path.basename(folder_path).split('.zip')[0]
+    os.makedirs(dir_path , exist_ok=True)
+    
+    print("[INFO] Extracting the archived file...")
+    patoolib.extract_archive(folder_path, outdir=dir_path)
+    print("[INFO] Extraction completed.")
+
+    return os.path.join(dir_path, file_name)
 
 def get_clip(clip_model_type : str = 'ViT-B-32' ,
              pretrained : str = 'openai'):
