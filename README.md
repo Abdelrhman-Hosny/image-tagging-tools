@@ -2,7 +2,7 @@
 
 
 # train.py
-> A script for. training classification models based on `pixel-art-tagged-tag-to-image-hash-list.json` file and `pixel-art-tagged-metadata.json` file.
+> A script for training classification models based on `pixel-art-tagged-tag-to-image-hash-list.json` file and `pixel-art-tagged-metadata.json` file.
 
 ## Tool Description
 
