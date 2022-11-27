@@ -3,6 +3,7 @@ from typing import Iterator
 from PIL import Image
 import patoolib
 import shutil
+import glob
 
 class ImageDatasetLoader: 
     """utility methods to load datasets of images from folder or an archive file given the folder or the archive file path. 
@@ -10,7 +11,7 @@ class ImageDatasetLoader:
     def __init__(self) -> None:
         pass
     @staticmethod
-    def __list_dir(dir_path: str, recursive: bool = True) -> list[str]: 
+    def __list_dir(dir_path: str, recursive: bool = True): 
         """method to list all file paths for a given directory. 
         :param dir_path: The directory to get the it's files paths
         :type dir_path: str
@@ -40,6 +41,22 @@ class ImageDatasetLoader:
             return True 
         except Exception: 
             return False 
+
+    @staticmethod
+    def __latest_in_folder(path: str) -> str:
+        """find the latest file/folder in a specific folder.
+
+        :param path: path of the folder to search in.
+        :type path: str
+        :returns: path of the latest file/folder.
+        :rtype: str
+        """
+
+        list_of_files = glob.glob(f'{path}/*') # * means all 
+        latest_file = max(list_of_files, key=os.path.getctime)
+
+        return latest_file
+        
         
     @staticmethod
     def __extract_archive(path: str) -> str: 
@@ -57,16 +74,18 @@ class ImageDatasetLoader:
         
         output_path = f"{file_name}-decompressed-tmp"
         
-        output_directory = os.path.join('./outputs/tmp', output_path)
+        output_directory = os.path.join('./outputs/tmp' , output_path)
+        
         #make sure the output dir is found or else create it. 
         os.makedirs(output_directory, exist_ok = True)
-
         patoolib.extract_archive(path, outdir = output_directory)
         
-        return output_directory
+        file_name = os.path.split(ImageDatasetLoader.__latest_in_folder(output_directory))[1]
+
+        return os.path.join(output_directory, file_name) # modified return value
 
     @staticmethod
-    def load(dataset_path: str, recursive: bool = True, batch_size: int = 32) -> Iterator[list[Image.Image]]: 
+    def load(dataset_path: str, recursive: bool = True, batch_size: int = 32): 
         """loader for the given dataset path, it returns a generator 
         
         :param dataset_path: path of the dataset either it's an archive or a directory of images.
@@ -84,23 +103,25 @@ class ImageDatasetLoader:
         if ImageDatasetLoader.__is_archive(dataset_path):
             archive_dataset = True 
             image_dataset_folder_path = ImageDatasetLoader.__extract_archive(dataset_path)
-            
+            print("is archive dataset")
+            print(f"dataset folder path  = {image_dataset_folder_path}")
         #get all tags in the dataset. 
         tags = [tag.lower() for tag in os.listdir(image_dataset_folder_path)]
+        print(tags)
         
         #make sure other-training and other-validation tags are available. 
         
-        error = False 
-        if "other-training" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-training"))) == 0:
-            error = "`other-training` folder should be contained in the dataset and not empty"
-        
-        if "other-validation" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-validation"))) == 0: 
-            error = "`other-validation` folder should be contained in the dataset and not empty"
-
-        if  error is not False: 
-            if archive_dataset: 
-                shutil.rmtree(image_dataset_folder_path)
-            raise AssertionError(error)
+#        error = False 
+#        if "other-training" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-training"))) == 0:
+#            error = "`other-training` folder should be contained in the dataset and not empty"
+#        
+#        if "other-validation" not in tags or len(os.listdir(os.path.join(image_dataset_folder_path, "other-validation"))) == 0: 
+#            error = "`other-validation` folder should be contained in the dataset and not empty"
+#
+#        if  error is not False: 
+#            if archive_dataset: 
+#                shutil.rmtree(image_dataset_folder_path)
+#            raise AssertionError(error)
             
         
         dataset_files_paths = ImageDatasetLoader.__list_dir(image_dataset_folder_path, recursive)
