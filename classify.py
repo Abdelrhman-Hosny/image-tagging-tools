@@ -2,8 +2,6 @@ import argparse
 import os
 import numpy as np
 from classify_helper_functions import *
-import torch
-
 
 def main(
         folder_path: str, 
