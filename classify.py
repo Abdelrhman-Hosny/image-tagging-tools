@@ -3,8 +3,6 @@ import os
 import numpy as np
 from classify_helper_functions import *
 
-
-
 def main(
         folder_path: str, 
         output_dir : str, 
@@ -71,8 +69,7 @@ def main(
                 except KeyError:
                     image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
                 
-                # Get image class based on the classification using the it's model and mapping    
-                image_class_prob     = classify_image_prob(image_features,models_dict[model_name].to(device)) # get the probability list
+                image_class_prob     = classify_image_prob(image_features,models_dict[model_name]) # get the probability list
                 model_type, tag_name = get_model_tag_name(model_name) 
                 tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
 
