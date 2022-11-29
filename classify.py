@@ -59,16 +59,17 @@ def main(
         
         image_file_path = os.path.join(folder_path, img_file)
         blake2b_hash = compute_blake2b(Image.open(image_file_path))
+        
+        try : 
+            image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
+        except KeyError:
+            image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
+
         try :
             classes_list = [] # a list of dict for every class 
             # loop through each model and find the classification of the image.
             for model_name in models_dict:
-                
-                try : 
-                    image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
-                except KeyError:
-                    image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
-                
+                                
                 image_class_prob     = classify_image_prob(image_features,models_dict[model_name]) # get the probability list
                 model_type, tag_name = get_model_tag_name(model_name) 
                 tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
