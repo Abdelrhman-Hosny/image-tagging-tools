@@ -26,7 +26,7 @@ pip install -r src/to/dir/requirements.txt
 ## Example Usage
 
 ```
-python src/to/dir/train.py --metadata_json  '/src/to/dir/pixel-art-tagged-metadata.json' --tag_to_hash_json '/src/to/dir/pixel-art-tagged-tag-to-image-hash-list.json'
+python src/to/dir/train.py --metadata_json  '/src/to/dir/input-metadata.json' --tag_to_hash_json '/src/to/dir/input-tag-to-image-hash-list.json'
 ```
 
 > Note that if the `output` is not created the script automatically creates it for you. 
@@ -62,11 +62,11 @@ pip install -r src/to/dir/requirements.txt
 ## Example Usage
 
 ```
-python src/to/dir/classify.py --metadata_json  '/src/to/dir/pixel-art-metadata.json' --directory  /src/to/dir/images_directory 
+python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json' --directory  /src/to/dir/images_directory 
 ```
 
 ```
-python src/to/dir/classify.py --metadata_json  '/src/to/dir/pixel-art-metadata.json' \
+python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json' \
                               --directory  /src/to/dir/images_directory 
                               --output /src/to/output_dir
                               --output_bins 10
