@@ -204,6 +204,7 @@ class ImageDatasetProcessor:
         #load the CLIP model. 
         model, _, preprocess = open_clip.create_model_and_transforms(clip_model,pretrained = pretrained)
         
+        model.to(device)
         images_loader = None
         #load the image dataset. 
         try: 
