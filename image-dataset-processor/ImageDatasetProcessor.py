@@ -7,7 +7,7 @@ from PIL import Image
 from ImageDatasetLoader import ImageDatasetLoader
 import hashlib
 import json 
-import fire 
+import fire
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 import multiprocessing
 from pathlib import Path

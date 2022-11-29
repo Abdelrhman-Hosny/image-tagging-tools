@@ -83,6 +83,75 @@ class ImageDatasetLoader:
         file_name = os.path.split(ImageDatasetLoader.__latest_in_folder(output_directory))[1]
 
         return os.path.join(output_directory, file_name) # modified return value
+    
+    @staticmethod
+    def convert_gif_to_image(gif_path:str):
+        """Delets the GIF and change it with first frame .png image
+        :param gif_path: path to the GIF file.
+        :type gif_path: str
+        :rtype: None
+        """
+        im = Image.open(gif_path)
+        dir_path = os.path.dirname(os.path.abspath(gif_path))
+        im.seek(0)
+        im_file = os.path.basename(gif_path).split('.gif')[0]
+        save_path = os.path.join(dir_path ,f'{im_file}.png' )
+        im.save(save_path) # save the first frame as .png image 
+        im.close()
+        os.remove(gif_path)
+        #os.system(f'rm -r {gif_path}') # Delete the .gif file 
+
+    @staticmethod
+    def clean_file(file_path: str):
+        """This function takes a file path and see if it is supported or not. 
+            :param file_path: path of the file to work with 
+            :type file_path: str
+        """
+        if file_path.lower().endswith('.gif'): # If it's GIF then convert to image and exit 
+            try : 
+                ImageDatasetLoader.convert_gif_to_image(file_path)
+            except Exception as e:
+                print(f"[Warning] problem with {file_path}, {e}")
+            if os.path.exists(file_path):
+                print(f"[Warning] removing {file_path}")
+                os.remove(file_path)
+                #os.system(f'rm {file_path}')
+            return 
+
+    @staticmethod
+    def clean_directory(dir_path: str, only_sub_dir: bool = False):
+        """ clean a directory files and folders
+
+        :param dir_path: path to the directory which will be cleaned.
+        :type dir_path: str
+        :param only_sub_dir: an option to make it only sub directories 
+                            for ex: in cleaning pixel-art-tagged folder.
+        :type only_sub_dir: bool
+        :rtype: None
+        """
+        
+        for dir in os.listdir(dir_path):
+            sub_dir = os.path.join(dir_path, dir)
+            
+            if os.path.isfile(sub_dir): # if it's a file then clean the file  
+                if only_sub_dir: # no subfiles allowed for example in the pixel-art-tagged 
+                    os.remove(sub_dir)
+                    print(f"[Removing] {sub_dir}")
+                    continue 
+                
+                ImageDatasetLoader.clean_file(sub_dir)
+                continue
+
+            if len(os.listdir(sub_dir)) == 0: # Empty folder, delte it 
+                shutil.rmtree(sub_dir)
+                #os.system(f'rm -r {sub_dir}') 
+                print(f'[Removing] {sub_dir}')
+                continue
+
+            if os.path.isdir(sub_dir) and only_sub_dir: # move to the sub-directory and clean it.
+                ImageDatasetLoader.clean_directory(sub_dir)
+            else:
+                shutil.rmtree(sub_dir)  
 
     @staticmethod
     def load(dataset_path: str, recursive: bool = True, batch_size: int = 32): 
@@ -105,6 +174,9 @@ class ImageDatasetLoader:
             image_dataset_folder_path = ImageDatasetLoader.__extract_archive(dataset_path)
             print("is archive dataset")
             print(f"dataset folder path  = {image_dataset_folder_path}")
+        
+        #clean the dataset
+        ImageDatasetLoader.clean_directory(image_dataset_folder_path, only_sub_dir=True)
         #get all tags in the dataset. 
         tags = [tag.lower() for tag in os.listdir(image_dataset_folder_path)]
         print(tags)
