@@ -1,0 +1,64 @@
+model: ovr-svm
+task: binary-classification
+tag: [pos-video-game]
+
+tag-set-image-count:   22 
+other-set-image-count: 1 
+validation-tag-image-count   : 2  
+validation-other-image-count : 1  
+
+false-positive-rate: 1.0000  
+false-negative-rate: 0.0000  
+true-positive-rate : 1.0000  
+true-negative-rate : 0.0000  
+
+false-positive :  1 out of 3  
+false-negative : 0  out of 3 
+true-positive : 2 out of 3  
+true-negative : 0 out of 3  
+
+>Accuracy : 66.6667
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       0.67      1.00      0.80         2
+           1       0.00      0.00      0.00         1
+
+    accuracy                           0.67         3
+   macro avg       0.33      0.50      0.40         3
+weighted avg       0.44      0.67      0.53         3
+
+
+Index 0 is class pos-video-game
+Index 1 is class other 
+
+in-distribution 
+############################################################################### 
+                                                                         0  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         0  0.7 
+                                                                         0  0.8 
+██████████████████████████████████████████████████████████████████████  22  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+███████████████████████████████████████████████████████████████████████  1  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         0  0.7 
+                                                                         0  0.8 
+                                                                         0  0.9 
+                                                                         0  1.0 
+
+

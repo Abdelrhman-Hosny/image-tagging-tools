@@ -1,0 +1,64 @@
+model: ovr-LR
+task: binary-classification
+tag: [pos-color-pallete]
+
+tag-set-image-count:   3 
+other-set-image-count: 1 
+validation-tag-image-count   : 1  
+validation-other-image-count : 1  
+
+false-positive-rate: 0.0000  
+false-negative-rate: 0.0000  
+true-positive-rate : 1.0000  
+true-negative-rate : 1.0000  
+
+false-positive :  0 out of 2  
+false-negative : 0  out of 2 
+true-positive : 1 out of 2  
+true-negative : 1 out of 2  
+
+>Accuracy : 100.0000
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00         1
+           1       1.00      1.00      1.00         1
+
+    accuracy                           1.00         2
+   macro avg       1.00      1.00      1.00         2
+weighted avg       1.00      1.00      1.00         2
+
+
+Index 0 is class pos-color-pallete
+Index 1 is class other 
+
+in-distribution 
+############################################################################### 
+                                                                         0  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+███████████████████████████████████                                      1  0.6 
+                                                                         0  0.7 
+                                                                         0  0.8 
+███████████████████████████████████████████████████████████████████████  2  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+                                                                         0  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         0  0.7 
+                                                                         0  0.8 
+███████████████████████████████████████████████████████████████████████  1  0.9 
+                                                                         0  1.0 
+
+

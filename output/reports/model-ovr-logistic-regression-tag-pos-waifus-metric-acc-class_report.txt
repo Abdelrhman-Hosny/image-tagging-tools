@@ -1,0 +1,64 @@
+model: ovr-LR
+task: binary-classification
+tag: [pos-waifus]
+
+tag-set-image-count:   24 
+other-set-image-count: 1 
+validation-tag-image-count   : 2  
+validation-other-image-count : 1  
+
+false-positive-rate: 0.0000  
+false-negative-rate: 0.5000  
+true-positive-rate : 0.5000  
+true-negative-rate : 1.0000  
+
+false-positive :  0 out of 3  
+false-negative : 1  out of 3 
+true-positive : 1 out of 3  
+true-negative : 1 out of 3  
+
+>Accuracy : 66.6667
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       1.00      0.50      0.67         2
+           1       0.50      1.00      0.67         1
+
+    accuracy                           0.67         3
+   macro avg       0.75      0.75      0.67         3
+weighted avg       0.83      0.67      0.67         3
+
+
+Index 0 is class pos-waifus
+Index 1 is class other 
+
+in-distribution 
+############################################################################### 
+                                                                         0  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         0  0.7 
+                                                                         0  0.8 
+██████████████████████████████████████████████████████████████████████  23  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+                                                                         0  0.1 
+                                                                         0  0.2 
+                                                                         0  0.3 
+                                                                         0  0.4 
+                                                                         0  0.5 
+                                                                         0  0.6 
+███████████████████████████████████████████████████████████████████████  1  0.7 
+                                                                         0  0.8 
+                                                                         0  0.9 
+                                                                         0  1.0 
+
+
