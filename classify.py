@@ -75,12 +75,10 @@ def main(
                     tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
 
                     # Find the output folder and create it based on model type , tag name 
-                    tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag_name}-results',f'{tag_name}',tag_bin])
-                    other_out_folder    = make_dir([image_tagging_folder, f'{model_type}',f'{tag_name}-results', 'other',other_bin])
+                    tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag_name}',tag_bin])
                     
                     # Copy the file from source to destination 
                     shutil.copy(image_file_path,tag_name_out_folder)
-                    shutil.copy(image_file_path,other_out_folder)
 
                     classes_list.append({
                                         'model_type' : model_type,
@@ -96,7 +94,7 @@ def main(
         except Exception as e :
             print(f"[ERROR] {e} in file {img_file}")
             continue
-        
+
         out_json[blake2b_hash] = {
                             'hash_id'      : blake2b_hash,
                             'file_path'    : image_file_path, 
