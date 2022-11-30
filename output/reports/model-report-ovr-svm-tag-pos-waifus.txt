@@ -1,0 +1,64 @@
+model: ovr-svm
+task: binary-classification
+tag: [pos-waifus]
+
+tag-set-image-count:   45 
+other-set-image-count: 272 
+validation-tag-image-count   : 4  
+validation-other-image-count : 27  
+
+false-positive-rate: 0.0370  
+false-negative-rate: 0.0000  
+true-positive-rate : 1.0000  
+true-negative-rate : 0.9630  
+
+false-positive :  1 out of 31  
+false-negative : 0  out of 31 
+true-positive : 4 out of 31  
+true-negative : 26 out of 31  
+
+>Accuracy : 96.7742
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       0.80      1.00      0.89         4
+           1       1.00      0.96      0.98        27
+
+    accuracy                           0.97        31
+   macro avg       0.90      0.98      0.94        31
+weighted avg       0.97      0.97      0.97        31
+
+
+Index 0 is class pos-waifus
+Index 1 is class other 
+
+in-distribution 
+############################################################################### 
+██                                                                       1  0.1 
+                                                                         0  0.2 
+██                                                                       1  0.3 
+████                                                                     2  0.4 
+████                                                                     2  0.5 
+████                                                                     2  0.6 
+████                                                                     2  0.7 
+███████████                                                              5  0.8 
+██████████████████████████████████████████████████████████████████████  30  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+                                                                         1  0.1 
+                                                                         0  0.2 
+                                                                         2  0.3 
+                                                                         1  0.4 
+                                                                         2  0.5 
+                                                                         1  0.6 
+                                                                         2  0.7 
+████                                                                    13  0.8 
+█████████████████████████████████████████████████████████████████████  197  0.9 
+                                                                         0  1.0 
+
+

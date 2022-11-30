@@ -1,0 +1,64 @@
+model: ovr-svm
+task: binary-classification
+tag: [pos-pixel-art-best]
+
+tag-set-image-count:   37 
+other-set-image-count: 272 
+validation-tag-image-count   : 3  
+validation-other-image-count : 27  
+
+false-positive-rate: 0.0000  
+false-negative-rate: 0.3333  
+true-positive-rate : 0.6667  
+true-negative-rate : 1.0000  
+
+false-positive :  0 out of 30  
+false-negative : 1  out of 30 
+true-positive : 2 out of 30  
+true-negative : 27 out of 30  
+
+>Accuracy : 96.6667
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       1.00      0.67      0.80         3
+           1       0.96      1.00      0.98        27
+
+    accuracy                           0.97        30
+   macro avg       0.98      0.83      0.89        30
+weighted avg       0.97      0.97      0.96        30
+
+
+Index 0 is class pos-pixel-art-best
+Index 1 is class other 
+
+in-distribution 
+############################################################################### 
+████████                                                                 1  0.1 
+                                                                         0  0.2 
+██████████████████████████                                               3  0.3 
+███████████████████████████████████                                      4  0.4 
+██████████████████████████                                               3  0.5 
+████████████████████████████████████████████                             5  0.6 
+██████████████████████████████████████████████████████████████           7  0.7 
+███████████████████████████████████████████████████████████████████████  8  0.8 
+████████                                                                 1  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+                                                                         0  0.1 
+                                                                         1  0.2 
+                                                                         1  0.3 
+█                                                                        3  0.4 
+█                                                                        4  0.5 
+█                                                                        5  0.6 
+█                                                                        4  0.7 
+█████                                                                   16  0.8 
+█████████████████████████████████████████████████████████████████████  185  0.9 
+                                                                         0  1.0 
+
+
