@@ -1,0 +1,64 @@
+model: ovr-LR
+task: binary-classification
+tag: [not-pixel-art-digital]
+
+tag-set-image-count:   500 
+other-set-image-count: 272 
+validation-tag-image-count   : 50  
+validation-other-image-count : 27  
+
+false-positive-rate: 0.2593  
+false-negative-rate: 0.1200  
+true-positive-rate : 0.8800  
+true-negative-rate : 0.7407  
+
+false-positive :  7 out of 77  
+false-negative : 6  out of 77 
+true-positive : 44 out of 77  
+true-negative : 20 out of 77  
+
+>Accuracy : 83.1169
+
+Classification Report : 
+
+              precision    recall  f1-score   support
+
+           0       0.86      0.88      0.87        50
+           1       0.77      0.74      0.75        27
+
+    accuracy                           0.83        77
+   macro avg       0.82      0.81      0.81        77
+weighted avg       0.83      0.83      0.83        77
+
+
+Index 0 is class not-pixel-art-digital
+Index 1 is class other 
+
+in-distribution 
+############################################################################### 
+                                                                         1  0.1 
+                                                                         0  0.2 
+                                                                         2  0.3 
+                                                                         4  0.4 
+█                                                                        5  0.5 
+███                                                                     16  0.6 
+████████                                                                38  0.7 
+██████████████████████                                                 106  0.8 
+█████████████████████████████████████████████████████████████████████  326  0.9 
+                                                                         0  1.0 
+
+
+out-distribution 
+############################################################################### 
+███████████████████████                                                 35  0.1 
+████████                                                                13  0.2 
+██                                                                       4  0.3 
+██                                                                       4  0.4 
+██                                                                       4  0.5 
+█████                                                                    9  0.6 
+██████                                                                  10  0.7 
+█████████████████                                                       26  0.8 
+█████████████████████████████████████████████████████████████████████  104  0.9 
+                                                                         0  1.0 
+
+
