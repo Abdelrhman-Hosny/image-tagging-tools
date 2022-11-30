@@ -272,7 +272,7 @@ def generate_report(
        :rtype: None. 
     """
 
-    model_file_name = f'model-ovr-logistic-regression-tag-{tag_name}' if lr else f'model-ovr-svm-tag-{tag_name}'
+    model_file_name = f'model-report-ovr-logistic-regression-tag-{tag_name}' if lr else f'model-report-ovr-svm-tag-{tag_name}'
     text_file_path = os.path.join(reports_output_folder ,f'{model_file_name}.txt' )
     with open( text_file_path ,"w+", encoding="utf-8") as f:
         f.writelines(text_file_lines)
