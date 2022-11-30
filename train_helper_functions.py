@@ -243,8 +243,8 @@ def check_out_folder(output_dir : str):
     """
 
     if output_dir is None:
-        report_out_folder = make_dir(['outputs' , 'reports']) 
-        models_out_folder = make_dir(['outputs' , 'models'])
+        report_out_folder = make_dir(['output' , 'reports']) 
+        models_out_folder = make_dir(['output' , 'models'])
     else:
         report_out_folder = os.path.join(output_dir , 'reports') 
         models_out_folder = os.path.join(output_dir , 'models')
