@@ -160,7 +160,7 @@ class ImageDatasetProcessor:
     @staticmethod
     def process_dataset(
         dataset_path: str,
-        output_folder: str,
+        output_folder: str = './output/clip-cache', 
         clip_model: str = 'ViT-B-32',
         pretrained: str = 'openai',
         batch_size: int = 32,
@@ -172,7 +172,7 @@ class ImageDatasetProcessor:
             
         :param dataset_path: path of the dataset whatever it's an archive or a directory of images. 
         :type dataset_path: str
-        :param output_folder: path to the directory where to save the files into it. 
+        :param output_folder: path to the directory where to save the files into it, default is './output/clip-cache'
         :type output_folder: str
         :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
         :type clip_model: str
@@ -263,7 +263,7 @@ class ImageDatasetProcessor:
     @staticmethod
     def process(
         input_folder: str,
-        output_folder: str,
+        output_folder: str = './output/clip-cache', 
         clip_model: str = 'ViT-B-32',
         pretrained: str = 'openai',
         batch_size: int = 32,
@@ -275,7 +275,7 @@ class ImageDatasetProcessor:
             
         :param input_folder: path to the directory containing sub-folders of each tag. 
         :type input_folder: str
-        :param output_folder: path to the directory where to save the files into it. 
+        :param output_folder: path to the directory where to save the files into it, default is './output/clip-cache'
         :type output_folder: str
         :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
         :type clip_model: str
@@ -308,7 +308,7 @@ class ImageDatasetProcessor:
 
 def process_image_dataset_cli(
     input_folder: str,
-    output_folder: str, 
+    output_folder: str = './output/clip-cache', 
     clip_model: str = 'ViT-B-32',
     pretrained: str = 'openai',
     batch_size: int = 32,
@@ -320,7 +320,7 @@ def process_image_dataset_cli(
         
     :param input_folder: path to the directory containing sub-folders of each tag. 
     :type input_folder: str
-    :param output_folder: path to the directory where to save the files into it. 
+    :param output_folder: path to the directory where to save the files into it, default is './output/clip-cache'
     :type output_folder: str
     :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
     :type clip_model: str
