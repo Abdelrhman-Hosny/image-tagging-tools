@@ -14,7 +14,9 @@ pip install -r src/to/dir/requirements.txt
 ## CLI Parameters
 
 * `input_folder` _[string]_ - _[required]_ - path to the directory containing sub-folders of each tag.
-* `output_folder` _[string]_ - _[required]_ - path to the directory where to save the files into it.
+* `output_folder` _[string]_ - _[optional]_ - path to the directory where to save the files into it.
+* `tagged_dataset` _[bool]_ - _[optional]_ - the dataset to process is a tagged dataset such that each each parent folder name is the tag of the images contained within it, default is `True`
+
 
 * `clip_model` _[str]_ - _[optional]_ CLIP model to be used, default is `'ViT-B-32'`
 
