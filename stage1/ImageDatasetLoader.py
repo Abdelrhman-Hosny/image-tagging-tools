@@ -154,11 +154,13 @@ class ImageDatasetLoader:
                 shutil.rmtree(sub_dir)  
 
     @staticmethod
-    def load(dataset_path: str, recursive: bool = True, batch_size: int = 32): 
+    def load(dataset_path: str, tagged_dataset: bool = True,  recursive: bool = True, batch_size: int = 32): 
         """loader for the given dataset path, it returns a generator 
         
         :param dataset_path: path of the dataset either it's an archive or a directory of images.
         :type dataset_path: str
+        :param tagged_dataset: if the given dataset is a tagged dataset, default is `True`
+        :type tagged_dataset: bool
         :param recursive: If it's set to True the function will return paths of all files in the given directory 
                 and all its subdirectories
         :type recursive: bool
@@ -175,11 +177,11 @@ class ImageDatasetLoader:
             print("is archive dataset")
             print(f"dataset folder path  = {image_dataset_folder_path}")
         
-        #clean the dataset
-        ImageDatasetLoader.clean_directory(image_dataset_folder_path, only_sub_dir=True)
+        if tagged_dataset: 
+            #clean the dataset
+            ImageDatasetLoader.clean_directory(image_dataset_folder_path, only_sub_dir=True)
         #get all tags in the dataset. 
         tags = [tag.lower() for tag in os.listdir(image_dataset_folder_path)]
-        print(tags)
         
         #make sure other-training and other-validation tags are available. 
         

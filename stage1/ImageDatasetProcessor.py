@@ -65,7 +65,7 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
-        output_path = os.path.join(output_path, "input-metadata.json")
+        output_path = os.path.join(output_path, f"{dataset_name}-metadata.json")
         ImageDatasetProcessor.__write_to_json(json_result, output_path)
 
     @staticmethod
@@ -81,7 +81,7 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
-        output_path = os.path.join(output_path, "input-image-hash-to-tag-list.json")
+        output_path = os.path.join(output_path, f"{dataset_name}-image-hash-to-tag-list.json")
         hash_to_tag_list = {} 
         
         for image_hash, metadata in json_result.items(): 
@@ -103,7 +103,7 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
-        output_path = os.path.join(output_path, "input-tag-to-image-hash-list.json")
+        output_path = os.path.join(output_path, f"{dataset_name}-tag-to-image-hash-list.json")
         tag_to_hash_list = {} 
         
         for image_hash, metadata in json_result.items():
@@ -119,7 +119,7 @@ class ImageDatasetProcessor:
         ImageDatasetProcessor.__write_to_json(tag_to_hash_list, output_path)
 
     @staticmethod
-    def __image_metadata(image: Image.Image, image_id: int) -> Tuple[dict, int]: 
+    def __image_metadata(image: Image.Image, image_id: int, include_tag_name: bool = True) -> Tuple[dict, int]: 
         """Given a PIL image this method computes its metadata and returns it as dictionary 
             along with the provided `image_id` (used to know the image from returned multithreading)
             
@@ -127,6 +127,8 @@ class ImageDatasetProcessor:
         :type image: PIL.Image.Image
         :param image_id: id of the given image (used to specify for multithreading)
         :type image_id: int
+        :param include_tag_name: whatever is to include the parent directory as the tag name or not.
+        :type include_tag_name: bool
         :returns: returns a Tuple with (metadata, image_id)
         :rtype: Tuple[dict, int]
         """
@@ -136,8 +138,7 @@ class ImageDatasetProcessor:
         try:
             
             image_path = os.path.abspath(image.filename)
-            tag_name = Path(image_path).parent.name
-            
+
             metadata = {
                 'hash_id': ImageDatasetProcessor.__compute_blake2b(image), 
                 'file_path': image_path, 
@@ -147,8 +148,12 @@ class ImageDatasetProcessor:
                 'image_resolution': image.size,
                 'image_xsize': image.size[0], 
                 'image_ysize': image.size[1],
-                'image_tags': [tag_name], 
             }
+            
+            if include_tag_name: 
+                tag_name = Path(image_path).parent.name
+                metadata.update({'image_tags': [tag_name]})
+
         except Exception as error: 
             try: 
                 print(f"Failed to compute the metadata for the image {image.filename} because of the error message {error}")
@@ -160,7 +165,8 @@ class ImageDatasetProcessor:
     @staticmethod
     def process_dataset(
         dataset_path: str,
-        output_folder: str = './output', 
+        output_folder: str = './output',
+        tagged_dataset: bool = True, 
         clip_model: str = 'ViT-B-32',
         pretrained: str = 'openai',
         batch_size: int = 32,
@@ -174,6 +180,9 @@ class ImageDatasetProcessor:
         :type dataset_path: str
         :param output_folder: path to the directory where to save the files into it, default is './output'
         :type output_folder: str
+        :param tagged_dataset: the dataset to process is a tagged dataset such that each each parent folder name is the
+                    tag of the images contained within it, default is `True`
+        :type tagged_dataset: bool
         :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
         :type clip_model: str
         :param pretrained: the pre-trained model to be used for CLIP, default is `'openai'`
@@ -188,6 +197,9 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
+        if not tagged_dataset: 
+            output_folder = os.path.join('./output', 'clip-cache')
+
         #make sure output directory is created 
         os.makedirs(output_folder, exist_ok = True)
 
@@ -208,7 +220,7 @@ class ImageDatasetProcessor:
         images_loader = None
         #load the image dataset. 
         try: 
-            images_loader = ImageDatasetLoader.load(dataset_path, recursive = True, batch_size = batch_size)
+            images_loader = ImageDatasetLoader.load(dataset_path, tagged_dataset, recursive = True, batch_size = batch_size)
         except AssertionError as error: 
             print(f"[Error] in dataset: {dataset_name} due to the error: {error}")
     
@@ -222,7 +234,7 @@ class ImageDatasetProcessor:
                 #preprocess the images batch 
                 preprocessed_chunk = torch.stack([preprocess(image) for image in images_chunk])
                 #compute the metadata of the images batch. 
-                tasks = [thread_pool.submit(ImageDatasetProcessor.__image_metadata, image, image_index,) for image_index, image in enumerate(images_chunk)]
+                tasks = [thread_pool.submit(ImageDatasetProcessor.__image_metadata, image, image_index, tagged_dataset, ) for image_index, image in enumerate(images_chunk)]
                 #compute the CLIP embeddings of the current batch of images. 
                 images_embeddings = model.encode_image(preprocessed_chunk.to(device))
                 
@@ -239,7 +251,7 @@ class ImageDatasetProcessor:
                     })
                     
                     #hash of the image (BLAKE2b hash) is the key of the image data.
-                    if metadata['hash_id'] in json_result:
+                    if tagged_dataset and metadata['hash_id'] in json_result:
                         tag = metadata['image_tags'][0]
                         if tag not in json_result[metadata['hash_id']]['image_tags']: 
                             json_result[metadata['hash_id']]['image_tags'].append(tag)
@@ -250,13 +262,17 @@ class ImageDatasetProcessor:
                     
                     if processed_images_count % 1000 == 0: 
                         print(f"[INFO] dataset {dataset_name} finished processing {processed_images_count} images so far")
+        
+        if tagged_dataset: 
+            dataset_name = "input"
+            #save the json file of hash to tags list.
+            ImageDatasetProcessor.__save_hash_to_tags_list_json(json_result, output_folder, dataset_name)
+            #save the json file of tags to images hash list. 
+            ImageDatasetProcessor.__save_tags_to_images_hash_list_json(json_result, output_folder, dataset_name)
 
-        #save the metadata of the dataset
+        #save dataset metadata
         ImageDatasetProcessor.__save_dataset_metadata_json(json_result, output_folder, dataset_name)
-        #save the json file of hash to tags list.
-        ImageDatasetProcessor.__save_hash_to_tags_list_json(json_result, output_folder, dataset_name)
-        #save the json file of tags to images hash list. 
-        ImageDatasetProcessor.__save_tags_to_images_hash_list_json(json_result, output_folder, dataset_name)
+        
                 
         thread_pool.shutdown() #make sure all threads were terminated. 
 
@@ -264,6 +280,7 @@ class ImageDatasetProcessor:
     def process(
         input_folder: str,
         output_folder: str = './output', 
+        tagged_dataset: bool = True, 
         clip_model: str = 'ViT-B-32',
         pretrained: str = 'openai',
         batch_size: int = 32,
@@ -277,6 +294,9 @@ class ImageDatasetProcessor:
         :type input_folder: str
         :param output_folder: path to the directory where to save the files into it, default is './output'
         :type output_folder: str
+        :param tagged_dataset: the dataset to process is a tagged dataset such that each each parent folder name is the
+                    tag of the images contained within it, default is `True`
+        :type tagged_dataset: bool
         :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
         :type clip_model: str
         :param pretrained: the pre-trained model to be used for CLIP, default is `'openai'`
@@ -291,12 +311,15 @@ class ImageDatasetProcessor:
         :rtype: None
         """
         
+        if not tagged_dataset: 
+            output_folder = os.path.join('./output', 'clip-cache')
         #make sure result output path exists 
         os.makedirs(output_folder, exist_ok = True)
 
         ImageDatasetProcessor.process_dataset(
             input_folder,
             output_folder,
+            tagged_dataset,
             clip_model,
             pretrained,
             batch_size, 
@@ -308,7 +331,8 @@ class ImageDatasetProcessor:
 
 def process_image_dataset_cli(
     input_folder: str,
-    output_folder: str = './output', 
+    output_folder: str = './output',
+    tagged_dataset: bool = True, 
     clip_model: str = 'ViT-B-32',
     pretrained: str = 'openai',
     batch_size: int = 32,
@@ -322,6 +346,9 @@ def process_image_dataset_cli(
     :type input_folder: str
     :param output_folder: path to the directory where to save the files into it, default is './output'
     :type output_folder: str
+    :param tagged_dataset: the dataset to process is a tagged dataset such that each each parent folder name is the
+            tag of the images contained within it, default is `True`
+    :type tagged_dataset: bool
     :param clip_model: CLIP model to be used, default is `'ViT-B-32'`
     :type clip_model: str
     :param pretrained: the pre-trained model to be used for CLIP, default is `'openai'`
@@ -351,6 +378,7 @@ def process_image_dataset_cli(
     ImageDatasetProcessor.process(
         input_folder,
         output_folder,
+        tagged_dataset,
         clip_model, 
         pretrained, 
         batch_size, 
