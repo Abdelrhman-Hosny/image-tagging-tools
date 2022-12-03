@@ -120,6 +120,7 @@ def create_out_folder():
 
 def compute_blake2b(image: Image.Image): 
     """compute the BLAKE2b of a PIL image. 
+
     :param image: The PIL image to compute its BLAKE2b
     :type image: PIL.Image.Image
     :returns: the BLAKE2b str of the given image. 
@@ -310,6 +311,7 @@ def clip_image_features(
                         device:str
                         ):
     """ returns the features of the image using OpenClip
+
         :param image_path: path to the image to get it's features.
         :type iamge_path: str
         :param model: CLIP model object to get the features with.
@@ -322,72 +324,60 @@ def clip_image_features(
         :rtype: [1,512] Numpy array.
     """    
     with torch.no_grad():
-        image = preprocess(Image.open(image_path)).unsqueeze(0).to(device)
+        
+        if image_path.lower().endswith('.gif'): 
+          img_obj = convert_gif_to_image(image_path)  
+        else:
+          img_obj = Image.open(image_path)
+
+        image = preprocess(img_obj).unsqueeze(0).to(device)
         return model.encode_image(image).detach().numpy()
 
-def classify_image(
-                  image_path,
-                  classifier,
-                  clip_model,
-                  preprocess,
-                  device
-                  ):
-    """Returns the string of "tag/class" or "other" 
-       :param image_path: path to the image which will be classified.
-       :type image_path: str
-       :param classifier: classifier object.
-       :type classifier: Classifier .pkl file Object
-       :param mapper: mapping object to define which tag is index 0 and which tag is index 1.
-       :type mapper: JSON object
-       :param clip_model: CLIP model object to get the features with.
-       :type clip_model: CLIP model Object.
-       :type preprocess: CLIP preprocess object.
-       :param device: device which will be used in calculating the features.
-       :type device: str
-       :returns: tag/class name of the images's classification output.
-       :rtype: str
-    """
-    image_features = clip_image_features(image_path , clip_model , preprocess , device)
-    return mapper[str(classifier.predict(image_features)[0])]
-
-def convert_gif_to_image(gif_path:str):
-    """Delets the GIF and change it with first frame .png image
-    :param gif_path: path to the GIF file.
-    :type gif_path: str
-    :rtype: None
-    """
-    im = Image.open(gif_path)
-    dir_path = os.path.dirname(os.path.abspath(gif_path))
-    im.seek(0)
-    im_file = os.path.basename(gif_path).split('.gif')[0]
-    save_path = os.path.join(dir_path ,f'{im_file}.png' )
-    im.save(save_path) # save the first frame as .png image 
-    im.close()
-    os.remove(gif_path)
-    #os.system(f'rm -r {gif_path}') # Delete the .gif file 
 
 def clean_file(file_path):
   """This function takes a file path and see if it is supported or not. 
+     suported files : ['.gif','.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp']
+    
     :param file_path: path of the file to work with 
     :type file_path: str
   """
-  if file_path.lower().endswith('.gif'): # If it's GIF then convert to image and exit 
-    try : 
-      convert_gif_to_image(file_path)
-    except Exception as e:
-      print(f"[Warning] problem with {file_path}, {e}")
-      if os.path.exists(file_path):
-        print(f"[Warning] removing {file_path}")
-        os.remove(file_path)
-        #os.system(f'rm {file_path}')
-    return 
-
   # if it's not gif and not a supprted file type then remove it 
-  if not file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')):
+  if not file_path.lower().endswith(('.gif','.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')):
     os.remove(file_path)
-    #os.system(f'rm {file_path}')
     print(f'[Removing] {file_path}')
     return 
+
+
+def convert_gif_to_image(gif_path: str):
+  """gets the first frame of .gif file and returns it.
+
+  :param gif_path: path to the GIF file.
+  :type gif_path: str
+  :returns: image of the first frame of the .gif file.
+  :rtype: Image.Image
+  """
+  im = Image.open(gif_path)
+  im.seek(0)
+  return im 
+
+
+def file_to_hash(file_path: str):
+    """converts file (.gif or else) into blake 2b hash
+
+    :param file_path: file path to be converted.
+    :type file_path: str
+    :returns: blake 2b hash of the file.
+    :rtype: str
+    """
+    if file_path.lower().endswith('.gif'): # If it's GIF then convert to image and exit 
+      try : 
+        return compute_blake2b(convert_gif_to_image(file_path))
+      except Exception as e:
+        print(f"[ERROR]  cannot compute hash for {file_path} , {e}")
+        return
+    compute_blake2b(file_path)
+
+
 
 def clean_directory(
                     dir_path : str ,

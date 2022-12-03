@@ -58,7 +58,7 @@ def main(
     for img_file in tqdm(os.listdir(folder_path)):
         try:    
             image_file_path = os.path.join(folder_path, img_file)
-            blake2b_hash = compute_blake2b(Image.open(image_file_path))
+            blake2b_hash = file_to_hash(image_file_path)
             
             try : 
                 image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
@@ -84,7 +84,6 @@ def main(
                                         'model_type' : model_type,
                                         'tag_name'   : tag_name,
                                         'tag_prob'   : image_class_prob[0],
-                                        'other_prob' : image_class_prob[1],  
                                         })
 
             # Handles any unknown/unexpected errors for an image file.
@@ -98,7 +97,7 @@ def main(
         out_json[blake2b_hash] = {
                             'hash_id'      : blake2b_hash,
                             'file_path'    : image_file_path, 
-                            'classes_list' : classes_list
+                            'classifiers_output' : classes_list
                             }
     
     save_json(out_json,image_tagging_folder) # save the .json file
