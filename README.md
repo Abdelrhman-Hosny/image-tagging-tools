@@ -23,7 +23,7 @@ process a directory of images (paths to directory of images or an archived datas
 ## Example Usage
 
 ```sh
-python src/to/dir/ImageDatasetProcessor.py --input_folder='./my-dataset' output_folder='./result'
+python src/to/dir/ImageDatasetProcessor.py --input_folder='./my-dataset' --output_folder='./result'
 ```
 
 > Note that if the `output_folder` is not created the tool automatically creates it for you. 
@@ -49,7 +49,7 @@ The tool will immediately starts working, and output any warnings or error into 
 # Stage 2: Train Classifier
 
 
-> A script for training classification models based on `pixel-art-tagged-tag-to-image-hash-list.json` file and `pixel-art-tagged-metadata.json` file.
+> A script for training classification models based on `input-tag-to-image-hash-list.json` file and `input-metadata.json` file.
 
 ## Tool Description
 
@@ -58,7 +58,7 @@ Given a `metadata` json file containing embeddings for images and `tag-to-image-
 ## Example Usage
 
 ```
-python src/to/dir/train.py --metadata_json  '/src/to/dir/input-metadata.json' --tag_to_hash_json '/src/to/dir/input-tag-to-image-hash-list.json'
+python ./stage2/train.py --metadata_json  './input-metadata.json' --tag_to_hash_json './input-tag-to-image-hash-list.json'
 ```
 
 > Note that if the `output` is not created the script automatically creates it for you. 
@@ -91,15 +91,16 @@ Given a `metadata_json` json file containing embeddings for images and `director
 ## Example Usage
 
 ```
-python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json' --directory  /src/to/dir/images_directory 
+python src/to/dir/classify.py --metadata_json './input-metadata.json' --directory ‘./images_directory’
 ```
 
 ```
-python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json' \
-                              --directory  /src/to/dir/images_directory 
-                              --output /src/to/output_dir
-                              --output_bins 10
-                              --model /src/to/models_dir
+python ./stage3/classify.py --metadata_json './input-metadata.json' \
+                            --directory ‘/src/to/dir/images_directory’
+                            --output ‘./classification_output’
+                            --output_bins 10
+                            --model ‘./output/models’
+
 ```
 
 
