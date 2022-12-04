@@ -26,13 +26,6 @@ pip install -r src/to/dir/requirements.txt
 python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json' --directory  /src/to/dir/images_directory 
 ```
 
-```
-python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json' \
-                              --directory  /src/to/dir/images_directory 
-                              --output /src/to/output_dir
-                              --output_bins 10
-                              --model /src/to/models_dir
-```
 
 
 
