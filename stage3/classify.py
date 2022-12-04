@@ -90,16 +90,18 @@ def main(
             except Exception as e  :
                 print(f"[ERROR] {e} in file {img_file} in model {model_name}")
                 continue
+            
+            out_json[blake2b_hash] = {
+                                'hash_id'      : blake2b_hash,
+                                'file_path'    : image_file_path, 
+                                'classifiers_output' : classes_list
+                                }
+        
         except Exception as e :
             print(f"[ERROR] {e} in file {img_file}")
             continue
 
-        out_json[blake2b_hash] = {
-                            'hash_id'      : blake2b_hash,
-                            'file_path'    : image_file_path, 
-                            'classifiers_output' : classes_list
-                            }
-    
+
     save_json(out_json,image_tagging_folder) # save the .json file
     print("[INFO] Finished.")
 

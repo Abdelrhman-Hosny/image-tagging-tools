@@ -375,7 +375,7 @@ def file_to_hash(file_path: str):
       except Exception as e:
         print(f"[ERROR]  cannot compute hash for {file_path} , {e}")
         return
-    compute_blake2b(file_path)
+    compute_blake2b(Image.open(file_path))
 
 
 
