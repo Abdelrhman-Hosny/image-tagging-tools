@@ -374,8 +374,8 @@ def file_to_hash(file_path: str):
         return compute_blake2b(convert_gif_to_image(file_path))
       except Exception as e:
         print(f"[ERROR]  cannot compute hash for {file_path} , {e}")
-        return
-    compute_blake2b(Image.open(file_path))
+        return None 
+    return compute_blake2b(Image.open(file_path))
 
 
 
