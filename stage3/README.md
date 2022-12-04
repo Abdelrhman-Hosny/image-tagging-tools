@@ -1,5 +1,3 @@
-
-
 # classify.py
 > A script for classification models inference given images' `directory` or .zip file and `metadata_json` .json file.
 
@@ -44,5 +42,33 @@ python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json'
 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
+<br/>
+<br/>
+
+# classify_single.py
+> A script for classification models inference given images path' `image_path`  and models path `model_path`
+
+## Tool Description
+
+Given a `image_path` image file path and `model_path` model file path the script classifies single image using specified binary classification model, and saves the result in `single_image_classification` folder 
+
+## Installation
+All that's needed to start using classify_single.py is to install the dependencies using the command
+```
+pip install -r src/to/dir/requirements.txt
+```
 
 
+## CLI Parameters
+
+* `image_path` _[string]_ - _[required]_ - The path to the image file.
+* `model_path` _[string]_ - _[required]_ - The path to the single .pkl file model.
+* `output_bins` _[int]_ - _[optional]_ -  The number of bins of the results for each model.
+
+## Example Usage
+
+```
+python src/to/dir/classify_single.py --image_path  '/src/to/dir/image.png' --model_path  /src/to/dir/model_file.pkl 
+```
+
+Also you may call `--help` to see the options and their defaults in the cli. 
