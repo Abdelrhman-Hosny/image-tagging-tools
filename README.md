@@ -9,7 +9,7 @@ You can run the pipeline on google colab using the following [link](https://cola
 All what's needed to start using the pipeline locally is to have python 3.9+ then run the following command
 
 ```sh
-pip install -r src/to/dir/requirements.txt
+pip install -r ./requirements.txt
 ```
 
 # Stage 1: Image Dataset Processor
@@ -22,11 +22,17 @@ process a directory of images (paths to directory of images or an archived datas
 
 ## Example Usage
 
+* For a tagged dataset and save the output into `output` folder in the root directory. 
+
 ```sh
-python src/to/dir/ImageDatasetProcessor.py --input_folder='./my-dataset' --output_folder='./result'
+python ./stage1/ImageDatasetProcessor.py --input_folder='./my-dataset' 
 ```
 
-> Note that if the `output_folder` is not created the tool automatically creates it for you. 
+* For a non-tagged dataset and save the output into `output/clip-cache` folder.
+
+```sh
+python ./stage1/ImageDatasetProcessor.py --input_folder='./my-dataset' --tagged_dataset=False
+```
 
 The tool will immediately starts working, and output any warnings or error into the std while working. 
 
@@ -58,7 +64,7 @@ Given a `metadata` json file containing embeddings for images and `tag-to-image-
 ## Example Usage
 
 ```
-python ./stage2/train.py --metadata_json  './input-metadata.json' --tag_to_hash_json './input-tag-to-image-hash-list.json'
+python ./stage2/train.py --metadata_json  './output/input-metadata.json' --tag_to_hash_json './output/input-tag-to-image-hash-list.json'
 ```
 
 > Note that if the `output` is not created the script automatically creates it for you. 
@@ -91,7 +97,7 @@ Given a `metadata_json` json file containing embeddings for images and `director
 ## Example Usage
 
 ```
-python src/to/dir/classify.py --metadata_json './input-metadata.json' --directory ‘./images_directory’
+python ./stage3/classify.py --metadata_json './output/input-metadata.json' --directory ‘./output/images_directory’
 ```
 
 ```
