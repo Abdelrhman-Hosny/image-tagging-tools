@@ -130,116 +130,78 @@ Also you may call `--help` to see the options and their defaults in the cli.
 
 # Examples
 
-## Binary classification of a single image
-
-
-
-```python
-from classify_helper_functions import *
-
-IMAGE_PATH=""
-MODEL_PATH=""
-
-
-clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
-blake2b_hash = file_to_hash(IMAGE_PATH)
-
-models_dict = create_models_dict(MODEL_PATH)
-image_features = clip_image_features(IMAGE_PATH,clip_model,preprocess,device) # Calculate image features.
-
-classes_list = [] # a list of dict for every class 
-for model_name in models_dict:
-    image_class_prob     = classify_image_prob(image_features,models_dict[model_name]) # get the probability list
-
-
-print(image_class_prob)
+## Listing all the models.
+```python 
+list_models('./output/models') # listing all the models we have for classification. 
 ```
 
-## Binary classification using all models under `output/models` folder and directory of untagged images or .zip file
+## Binary classification of a single image using a single model.
 
 ```python
-import argparse
-import os
-import numpy as np
-from classify_helper_functions import *
+folder_path    = "./images/example1.png" # Input image.
+output_dir     = "./classification_single_image_single_model" # outut directory for the classification.
+json_file_path = "./input-metadata.json" # metadata .json file path.
+bins_number    = 10 # number of bins.
+model_path     = "./output/models/model-ovr-logistic-regression-tag-not-pixel-art-digital.pkl" # pickle file for the model.
 
-#Check if it's an archived dataset 
-if folder_path.endswith('.zip'): 
-    folder_path = unzip_folder(folder_path) # will be unzipped in the current directory of the script.
-
-# Clean the directoy .
-clean_directory(folder_path)
-
-# Get the output folder path.
-if output_dir is None : 
-    # Create the output directory name with time-stamp.
-    image_tagging_folder = create_out_folder()
-else :
-    image_tagging_folder = output_dir
-print(f"[INFO] Output folder {image_tagging_folder}")
-
-# Load the .json file.
-metadata_json_obj = load_json(json_file_path)
-
-if metadata_json_obj is None:
-    print("[WARNING] No .json file loaded, calculating embeddings for every image.")
-
-# Get CLIP model, to calculate CLIP embeddings if it's not in .json metadata file.
-clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
-dir_path = os.path.dirname(os.path.realpath(__file__))
-model_path = os.path.join(dir_path,'output','models') if model_path is None else model_path
-models_dict = create_models_dict(model_path)
-bins_array = get_bins_array(bins_number) 
-
-out_json = {} # a dictionary for classification scores for every model.
-# Loop through each image in the folder.
-for img_file in tqdm(os.listdir(folder_path)):
-    try:    
-        image_file_path = os.path.join(folder_path, img_file)
-        blake2b_hash = file_to_hash(image_file_path)
-
-        try : 
-            image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
-        except KeyError:
-            image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
-
-        classes_list = [] # a list of dict for every class 
-        # loop through each model and find the classification of the image.
-        for model_name in models_dict:
-            try :
-                image_class_prob     = classify_image_prob(image_features,models_dict[model_name]) # get the probability list
-                model_type, tag_name = get_model_tag_name(model_name) 
-                tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
-
-                # Find the output folder and create it based on model type , tag name 
-                tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag_name}',tag_bin])
-                
-                # Copy the file from source to destination 
-                shutil.copy(image_file_path,tag_name_out_folder)
-
-                classes_list.append({
-                                    'model_type' : model_type,
-                                    'tag_name'   : tag_name,
-                                    'tag_prob'   : image_class_prob[0]})
-
-            # Handles any unknown/unexpected errors for an image file.
-            except Exception as e  :
-                print(f"[ERROR] {e} in file {img_file} in model {model_name}")
-                continue
-
-            out_json[blake2b_hash] = {
-                        'hash_id'                 : blake2b_hash,
-                        'file_path'               : image_file_path,
-                        'classifiers_output'      : classes_list 
-                        }
-                                            
-    except Exception as e :
-        print(f"[ERROR] {e} in file {img_file}")
-        continue
-
-
-save_json(out_json,image_tagging_folder) # save the .json file
-print("[INFO] Finished.")
+# Run the classification.
+classify_main(
+        folder_path    = folder_path , 
+        output_dir     = output_dir, 
+        json_file_path = json_file_path, 
+        bins_number    = bins_number, 
+        model_path     = model_path, 
+        )
 
 ```
+
+
+## Multiple binary classification for a single image.
+
+```python
+folder_path    = "./images/example1.png" # input image.
+output_dir     = "./classification_single_image_all_models" # output directory of the classification.
+json_file_path = "./input-metadata.json" # metadata .json file path.
+bins_number    = 10 # number of bins.
+model_path = "./image-tagging-tools/output/models" # pickle file for the model.
+
+# run the classification.
+classify_main(
+        folder_path    = folder_path , 
+        output_dir     = output_dir, 
+        json_file_path = json_file_path, 
+        bins_number    = bins_number, 
+        model_path     = model_path, 
+        )
+```
+
+## Custom binary classification.
+
+```python
+
+TAG_NAME   = 'not-pixel-art' # tag which you want to classify.
+MODEL_TYPE = 'ovr-logistic-regression' # model type you want to use.
+
+folder_path    = "./images/example1.png" # input image.
+output_dir     = "./classification_single_image_custom_model" # output directory for the classification.
+json_file_path = "./input-metadata.json" # .json fil for metadata.
+bins_number    = 10 # bins number 
+
+# generating the path of the model's .pkl file using model type and tag name. 
+model_path = generate_model_path(
+                                  './output/models',
+                                  model_type= MODEL_TYPE,
+                                  tag_name= TAG_NAME
+                                 )
+                                 
+classify_main(
+        folder_path    = folder_path, 
+        output_dir     = output_dir, 
+        json_file_path = json_file_path, 
+        bins_number    = bins_number, 
+        model_path     = model_path, 
+        )                                 
+
+```
+
 
