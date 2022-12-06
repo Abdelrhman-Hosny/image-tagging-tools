@@ -243,66 +243,7 @@ def create_mappings_dict(mappings_path:str):
         mapping_obj.close()
 
     return mappings_dict
-    
-def loop_images(folder_path: str  , 
-                image_tagging_folder : str ,
-                models_dict : dict, 
-                class_mapping_dict : dict ,  
-                clip_model ,
-                preprocess ,
-                device):
-    """Loop through images' folder, classify each image,  put each image in it's directory.
-    :param folder_path: path to the images' folder.
-    :type folder_path: type of the images' folder path.
-    :param image_tagging_folder: path to the image tagging folder.
-    :type image_tagging_folder: str
-    :param models_dict: Dictionary for the models' dict.
-    :type models_dict: Dict.
-    :param class_mapping_dict: dictionary for class mappings jsons.
-    :type class_mapping_dict: dict
-    :param clip_model: CLIP model object. 
-    :type clip_model: CLIP
-    :param preprocess: preprocess object from open_clip
-    :param device: device of the machine ("cpu" or "cuda")
-    :type device: str
-    :returns: copy all the images in their classification directories
-    :rtype: None
-    """
-    for img_file in tqdm(os.listdir(folder_path)):
-        try :
-            # Image path 
-            img_file_path = os.path.join(folder_path , img_file) 
-            # loop through each model and find the classification of the image.
-            for model_name in models_dict:
-                try :
-                    # Get image class based on the classification using the it's model and mapping    
-                    image_class = classify_image(img_file_path , models_dict[model_name] , 
-                                                class_mapping_dict[model_name] , clip_model ,
-                                             preprocess , device )
-                except Exception as e:
-                    print(f"[WARNING] Problem with file {img_file} in classification.")
-                    continue
-                
-                # Get model name and tag from model's dict keys.
-                model_type = model_name.split('-tag-')[0].split('model-')[1] # model type, ex: svm or logistic regression 
-                tag_name = model_name.split('-tag-')[1] # tag/class name
 
-                # Find the output folder and create it based on model type , tag name 
-                if   model_type.strip() == 'ovr-svm':
-                    tag_name_out_folder= make_dir([image_tagging_folder, 'ovr-svm',f'{tag_name}-results', image_class.strip()])
-                elif model_type.strip() == 'ovr-logistic-regression':
-                    tag_name_out_folder= make_dir([image_tagging_folder, 'ovr-logistic-regression', f'{tag_name}-results',image_class.strip()])
-                else:
-                    print("[ERROR]  Something went wrong with folder names!")
-                    print(f"[ERROR] Please check {model_name}")
-                    continue           
-                # Copy the file from source to destination 
-                shutil.copy(img_file_path, tag_name_out_folder)
-
-        # Handles any unknown/unexpected errors for an image file.
-        except Exception as e  :
-            print(f"[ERROR] {e} in file {img_file}")
-            continue
 
 def clip_image_features(
                         image_path : str,
@@ -359,6 +300,108 @@ def convert_gif_to_image(gif_path: str):
   im = Image.open(gif_path)
   im.seek(0)
   return im 
+
+
+def classify_single_model_to_bin(
+                                  image_file_path: str,
+                                  model,
+                                  model_name: str,
+                                  image_features,
+                                  bins_array: List[float],
+                                  image_tagging_folder: str
+                                  ):
+    """classifying image file using only a single model object.
+
+    :param image_file_path: path to the image file.
+    :type image_file_path: str
+    :param model: model's object.
+    :type model: Object (SVM or LogisticRegression)
+    :param model_name: name of the input model.
+    :type model_name: str.
+    :param bins_array: array including the list of the bins for classification.
+    :type bins_array: List[float]
+    :param image_features: CLIP embedding features of the input image.
+    :type image_features: NdArray.
+    """
+    try :
+      image_class_prob     = classify_image_prob(image_features,model) # get the probability list
+      model_type, tag_name = get_model_tag_name(model_name) 
+      tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
+
+      # Find the output folder and create it based on model type , tag name 
+      tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag_name}',tag_bin])
+    
+      # Copy the file from source to destination 
+      shutil.copy(image_file_path,tag_name_out_folder)
+
+      return  { 'model_type' : model_type,
+                'tag_name'   : tag_name,
+                'tag_prob'   : image_class_prob[0]}
+    except Exception as e  :
+        print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_name}")
+        return None
+      
+
+
+def classify_to_bin(
+                    image_file_path: str,
+                    models_dict: dict,
+                    metadata_json_obj: dict,
+                    image_tagging_folder: str,
+                    bins_array: List[float],
+                    clip_model,
+                    preprocess,
+                    device
+                    ):
+  """classification for a single image through all the models.
+
+  :param image_file_path: path to the image will be classified.
+  :type image-file_path: str
+  :param models_dict: dictionary of all available classification models.
+  :type models_dict: dict
+  :param metadata_json_object: a dictioanry loaded from the .json file.
+  :type  metadata_json_object: dict
+  :param image_tagging_folder: path to the image tagging folder (output folder)
+  :type image_tagging-folder: str
+  :param bins_array: array of all available bins for classification.
+  :type bins_array: List[float]
+  :param clip_model: CLIP model object for getting the image features.
+  :type clip_model. CLIP
+  :param preprocess: preprocessing object for images before getting into CLIP.
+  :type preprocess: Object.
+  :param device: device name
+  :type device: str
+  """
+  try:    
+    blake2b_hash = file_to_hash(image_file_path)
+    try : 
+        image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
+    except KeyError:
+        image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
+
+    classes_list = [] # a list of dict for every class 
+    # loop through each model and find the classification of the image.
+    for model_name in models_dict:
+        model_result_dict = classify_single_model_to_bin(
+                                                          image_file_path,
+                                                          models_dict[model_name],
+                                                          model_name,
+                                                          image_features,
+                                                          bins_array,
+                                                          image_tagging_folder)
+        if model_result_dict is None:
+          continue
+
+        classes_list.append(model_result_dict)
+
+    return {'hash_id'  :  blake2b_hash,
+            'file_path': image_file_path,
+            'classifiers_output': classes_list}
+
+  except Exception as e :
+    print(f"[ERROR] {e} in file {os.path.basename(image_file_path)}")
+    return None 
+
 
 
 def file_to_hash(file_path: str):
