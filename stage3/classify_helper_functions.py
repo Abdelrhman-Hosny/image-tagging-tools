@@ -209,7 +209,7 @@ def create_models_dict(models_path:str):
             models_dict[model_name] = joblib.load(model)
         model.close()          
     else:                               # If it was a folder of all the models.
-      for model_file in tqdm(os.listdir(models_path)):
+      for model_file in os.listdir(models_path):
           if not model_file.endswith('pkl'):
               continue
 
@@ -225,6 +225,7 @@ def create_models_dict(models_path:str):
 
 def create_mappings_dict(mappings_path:str):
     """take the path of the mappings' folder, load all of them in one dict
+    
     :param mappings_path: path to the models pickle files path
     :type models_path: str
     :returns: dictionary contains all the models with their names
@@ -300,6 +301,52 @@ def convert_gif_to_image(gif_path: str):
   im = Image.open(gif_path)
   im.seek(0)
   return im 
+
+
+def list_models(model_folder_path: str):
+  """Listing all the models from a model's folder.
+
+  :param model_folder_path: path to the folder having all the classification models.
+  :type model_folder_path: str
+  :rtype: None
+  """
+  models_dict = create_models_dict(model_folder_path)
+  models = {}
+  for model_name in models_dict:
+    model_type, tag_name = get_model_tag_name(model_name) 
+    
+    if model_type not in models.keys():
+      models[model_type] = [tag_name]
+      continue
+    models[model_type].append(tag_name)
+
+  for model_idx , model_type in enumerate(models):
+    print(f"\n{model_idx+1})  {model_type}")
+    for tag_name in models[model_type]:
+      print(f"\t \t \t{tag_name}")
+
+
+
+def generate_model_path(
+                        model_folder_path: str,
+                        model_type: str,
+                        tag_name: str
+                        ):
+  """generating model path from just model type and model tag name.
+
+  :param model_folder_path: path to all the models folder.
+  :type model_folder_path: str
+  :param model_type: type of the model ('ovr-logistic-regression','ovr-svm')
+  :type model-_type: str
+  :param tag_name: name of the tag of the model.
+  :type tag_name: str
+  :returns: a path to the model's .pkl file.
+  :rtype: str 
+  """
+  pkl_file_path = os.path.join(model_folder_path,f'model-{model_type}-tag-{tag_name}.pkl')
+  return pkl_file_path if os.path.exists(pkl_file_path) else None 
+
+
 
 
 def classify_single_model_to_bin(
