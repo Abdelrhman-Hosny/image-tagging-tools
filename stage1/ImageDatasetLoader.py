@@ -133,25 +133,31 @@ class ImageDatasetLoader:
         for dir in os.listdir(dir_path):
             sub_dir = os.path.join(dir_path, dir)
             
-            if os.path.isfile(sub_dir): # if it's a file then clean the file  
+            if os.path.isfile(sub_dir): # It is a file. Check and break if it is stand alone. Otherwise perform cleean_file()
                 if only_sub_dir: # no subfiles allowed for example in the pixel-art-tagged 
-                    os.remove(sub_dir)
-                    print(f"[Removing] {sub_dir}")
-                    continue 
-                
+                    '''RV: Deactivated since it should not delete anything. Prompt error instead'''
+                    # os.remove(sub_dir)
+                    # print(f"[Removing] {sub_dir}")
+                    # continue 
+                    raise Exception ('[Error: Input dataset contains stand-alone file(s)...]')
+
                 ImageDatasetLoader.clean_file(sub_dir)
                 continue
 
-            if len(os.listdir(sub_dir)) == 0: # Empty folder, delte it 
-                shutil.rmtree(sub_dir)
-                #os.system(f'rm -r {sub_dir}') 
-                print(f'[Removing] {sub_dir}')
-                continue
+            if len(os.listdir(sub_dir)) == 0: # Empty folder, delete it 
+                '''RV: Deactivated since it should not delete anything. Prompt error instead'''
+                # shutil.rmtree(sub_dir)
+                # #os.system(f'rm -r {sub_dir}') 
+                # print(f'[Removing] {sub_dir}')
+                # continue
+                raise Exception ('[Error: Input dataset contains empty folder(s)...]')
 
             if os.path.isdir(sub_dir) and only_sub_dir: # move to the sub-directory and clean it.
                 ImageDatasetLoader.clean_directory(sub_dir)
             else:
-                shutil.rmtree(sub_dir)  
+                '''RV: Deactivated since it should not delete anything. Prompt error instead'''
+                #shutil.rmtree(sub_dir)  
+                raise Exception ('[Error: Dataset format is possible invalid...]')
 
     @staticmethod
     def load(dataset_path: str, tagged_dataset: bool = True,  recursive: bool = True, batch_size: int = 32): 

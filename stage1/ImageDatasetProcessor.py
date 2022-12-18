@@ -1,4 +1,8 @@
+import sys
+sys.path.insert(0, './')
 import os
+import sqlite3
+import time
 from typing import Tuple, Union
 import open_clip
 import torch
@@ -273,6 +277,61 @@ class ImageDatasetProcessor:
         #save dataset metadata
         ImageDatasetProcessor.__save_dataset_metadata_json(json_result, output_folder, dataset_name)
         
+        
+        '''
+        Database writing
+        Creating database and table for writing json_result data from dataset
+        '''
+        
+        DATABASE_NAME = '/stage1.db'
+        DATABASE_PATH = f'{output_folder}/{DATABASE_NAME}'
+        
+        def __delete_all_data_in_database():
+            __delete_database()
+            __create_database()
+
+        def __create_database():
+            cmd1 = '''CREATE TABLE stage1 (
+            file_name TEXT    NOT NULL,
+            hash_id   TEXT    NOT NULL,
+            file_path TEXT    NOT NULL
+            );
+            '''
+            db = sqlite3.connect(DATABASE_PATH)
+            c = db.cursor()
+            c.execute('PRAGMA encoding="UTF-8";')
+            c.execute(cmd1)
+            db.commit()
+        
+        def __delete_database():
+            try:
+                if(os.path.exists(DATABASE_PATH)):
+                    os.remove(DATABASE_PATH)
+            except Exception as e:
+                print(str(e))
+                time.sleep(1)
+                __delete_database()
+
+        def __insert_data_into_database(arg1, arg2, arg3):
+            try:
+                cmd = "insert into stage1(file_name, hash_id, file_path) values ('"+arg1+"', '"+arg2+"', '"+arg3+"')"
+                with sqlite3.connect(DATABASE_PATH) as conn:
+                    conn.execute(cmd)
+                    conn.commit()
+            except Exception as e:
+                if(str(e).find('lock') != -1 or str(e).find('attempt to write a readonly database') != -1):
+                    time.sleep(1)
+
+        __delete_all_data_in_database()
+
+        # Extracting data from json_result from dataset
+        json_keys = list(json_result.keys())
+        for key in json_keys:
+            # For each image, write 'file_name', hash_id' and 'file_path' to database
+            file_name = json_result[key]['file_name']
+            hash_id = json_result[key]['hash_id']
+            file_path = os.path.split(json_result[key]['file_path'])[0]
+            __insert_data_into_database(file_name, hash_id, file_path)
                 
         thread_pool.shutdown() #make sure all threads were terminated. 
 
