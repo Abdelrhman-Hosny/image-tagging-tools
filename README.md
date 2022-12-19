@@ -22,13 +22,13 @@ process a directory of images (paths to directory of images or an archived datas
 
 ## Example Usage
 
-* For a tagged dataset and save the output into `output` folder in the root directory. 
+* For a tagged dataset and save the output into `output` folder in the root directory. In addition, the SQLite database named `stage1.db` (containing file name, hash and file path for dataset images) will be created in the `output` folder in the root directory. 
 
 ```sh
 python ./stage1/ImageDatasetProcessor.py --input_folder='./my-dataset' 
 ```
 
-* For a non-tagged dataset and save the output into `output/clip-cache` folder.
+* For a non-tagged dataset and save the output into `output/clip-cache` folder.  In addition, the SQLite database named `stage1.db` (containing file name, hash and file path for dataset images) will be created in the `output/clip-cache` folder in the root directory. 
 
 ```sh
 python ./stage1/ImageDatasetProcessor.py --input_folder='./my-dataset' --tagged_dataset=False
