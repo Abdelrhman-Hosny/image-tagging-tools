@@ -108,14 +108,15 @@ def load_json(json_file_path:str):
     
     return json_dict
 
-def create_out_folder():
+def create_out_folder(base_dir = './'):
     """creates output directory for the image classification task.
     
     :returns: path to the output directory.
     :rtype: str
     """
     timestamp = datetime.datetime.now() 
-    image_tagging_folder_name = f'tagging_output_{timestamp.month}_{timestamp.day}_{timestamp.hour}_{timestamp.minute}'
+    # RV: Adding base directory
+    image_tagging_folder_name = os.path.join(base_dir, f'tagging_output_{timestamp.month}_{timestamp.day}_{timestamp.hour}_{timestamp.minute}')
     return make_dir(image_tagging_folder_name)
 
 def compute_blake2b(image: Image.Image): 
@@ -167,14 +168,24 @@ def unzip_folder(folder_path :str):
     :rtype: str
     """
     dir_path  = os.path.dirname(folder_path)
-    file_name = os.path.basename(folder_path).split('.zip')[0]
-    os.makedirs(dir_path , exist_ok=True)
+    # Use the file name as it is
+    #file_name = os.path.basename(folder_path).split('.zip')[0]
+    file_name = os.path.basename(folder_path)
+    #os.makedirs(dir_path , exist_ok=True)
     
-    print("[INFO] Extracting the archived file...")
-    patoolib.extract_archive(folder_path, outdir=dir_path)
-    print("[INFO] Extraction completed.")
+    # RV
+    #output_path = f"{file_name}-decompressed-tmp"
+    output_path = f"{file_name}"
+    output_directory = os.path.join('./outputs/tmp' , output_path)
+    #make sure the output dir is found or else create it. 
+    os.makedirs(output_directory, exist_ok = True)
 
-    return os.path.join(dir_path, file_name)
+    print("[INFO] Extracting the archived file...")
+    patoolib.extract_archive(folder_path, outdir=output_directory)
+    print("[INFO] Extraction completed.")
+    return output_directory
+
+    #return os.path.join(dir_path, file_name)
 
 def get_clip(clip_model_type : str = 'ViT-B-32' ,
              pretrained : str = 'openai'):
@@ -284,10 +295,12 @@ def clean_file(file_path):
     :type file_path: str
   """
   # if it's not gif and not a supprted file type then remove it 
-  if not file_path.lower().endswith(('.gif','.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')):
-    os.remove(file_path)
-    print(f'[Removing] {file_path}')
-    return 
+  # RV Adding zip, Disables this
+  # if not file_path.lower().endswith(('.zip', '.gif','.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')):
+  #   os.remove(file_path)
+  #   print(f'[Removing] {file_path}')
+  #   return 
+  pass
 
 
 def convert_gif_to_image(gif_path: str):
@@ -469,39 +482,17 @@ def file_to_hash(file_path: str):
 
 
 
-def clean_directory(
-                    dir_path : str ,
-                    only_sub_dir : bool = False
-                    ):
-      """ Clean a directory files and folders
-      :param dir_path: path to the directory which will be cleaned.
-      :type dir_path: str
-      :param only_sub_dir: an option to make it only sub directories 
-                           for ex: in cleaning pixel-art-tagged folder.
-      :type only_sub_dir: bool
-      :rtype: None
-      """
+def empty_dirs_check(dir_path : str):
+      """ Checking for empty directory"""
       for dir in os.listdir(dir_path):
         sub_dir = os.path.join(dir_path, dir)
-        
-        if os.path.isfile(sub_dir): # if it's a file then clean the file  
-          
-          if only_sub_dir : # no subfiles allowed for example in the pixel-art-tagged 
-            shutil.rmtree(sub_dir)
-            #os.system(f'rm  {sub_dir}') 
-            print(f"[Removing] {sub_dir}")
-            continue 
-          clean_file(sub_dir)
-          continue
 
-        if len(os.listdir(sub_dir)) == 0: # Empty folder, delte it 
-          shutil.rmtree(sub_dir)
-          #os.system(f'rm -r {sub_dir}') 
-          print(f'[Removing] {sub_dir}')
-          continue
-
-        if os.path.isdir(sub_dir):
-          clean_directory(sub_dir)
+        # Check for directory only
+        if not os.path.isdir(sub_dir):
+            if len(os.listdir(sub_dir)) == 0:
+              # Empty folder
+              print(f'[Warning] Empty folder found. Ignoring it: {sub_dir}')
+              continue
 
 def from_prob_to_bin(prob:float):
       """Divide the output to 10 bins

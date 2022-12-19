@@ -85,14 +85,13 @@ Also you may call `--help` to see the options and their defaults in the cli.
 
 # Stage 3: Classify Dataset
 
-> A script for classification models inference given images' `directory` or .zip file and `metadata_json` .json file.
-
+> A script for classification models inference given images' `directory` or .zip file and `metadata_json` .json file. 
 
 
 
 ## Tool Description
 
-Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder or .zip file, the script start to loop over every image and make the classification for it using every binary classification model.
+Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder, the script start to loop over every image and make the classification for it using every binary classification model. In addition, the SQLite database named `stage3.db` (containing file name, file path, hash, model type, tag name and tag score for given images) will be created in the `output` folder in the root directory. 
 
 ## Example Usage
 
