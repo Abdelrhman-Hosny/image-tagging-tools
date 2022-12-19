@@ -488,7 +488,7 @@ def empty_dirs_check(dir_path : str):
         sub_dir = os.path.join(dir_path, dir)
 
         # Check for directory only
-        if not os.path.isdir(sub_dir):
+        if os.path.isdir(sub_dir):
             if len(os.listdir(sub_dir)) == 0:
               # Empty folder
               print(f'[Warning] Empty folder found. Ignoring it: {sub_dir}')
