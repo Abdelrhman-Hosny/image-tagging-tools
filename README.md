@@ -85,7 +85,7 @@ Also you may call `--help` to see the options and their defaults in the cli.
 
 # Stage 3: Classify Dataset
 
-> A script for classification models inference given images' `directory` or .zip file and `metadata_json` .json file. 
+> A script for classification models inference given images' `directory` and `metadata_json` .json file. 
 
 
 
