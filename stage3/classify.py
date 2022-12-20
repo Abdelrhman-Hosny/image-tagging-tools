@@ -30,7 +30,7 @@ def main(
     # Check if the data is ZIP archive. Do in stage 4 
     if folder_path.endswith('.zip'): 
         # Data is ZIP archive. Do in stage 4
-        print (f'[Warning] Data folder is ZIP archive. Do in stage 4. Stopped {file}')
+        print (f'[WARNING] Data folder {folder_path} is ZIP archive. Use stage 4 for handling input data in .zip format. Stopped...')
         return 
 
     if not os.path.isfile(folder_path):
@@ -49,11 +49,11 @@ def main(
     for file in img_files_list:
         if file.lower().endswith(('.zip')):
             # Exclude the zip file at this stage
-            print (f'[Warning] ZIP archive excluded: {file}')
+            print (f'[WARNING] ZIP archive excluded: {file}')
             img_files_list.pop(img_files_list.index(file))
         elif not file.lower().endswith(('.gif','.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')):
             # Exclude file with unsupported image format
-            print (f'[Warning] Unsupported file: {file}')
+            print (f'[WARNING] Unsupported file: {file}')
             img_files_list.pop(img_files_list.index(file))
 
     # Get the output folder path.
@@ -110,8 +110,7 @@ def main(
     os.makedirs(db_out_dir, exist_ok = True)
     DATABASE_NAME = '/stage3.db'
     DATABASE_PATH = f'{db_out_dir}/{DATABASE_NAME}'
-    
-    print (DATABASE_PATH)
+
     def __delete_all_data_in_database():
         __delete_database()
         __create_database()
@@ -120,6 +119,7 @@ def main(
         cmd1 = '''CREATE TABLE stage3 (
         file_name   TEXT    NOT NULL,
         file_path   TEXT    NOT NULL,
+        type        TEXT    ,
         hash_id     TEXT    ,
         model_type  TEXT    ,
         tag_name    TEXT    ,
@@ -141,9 +141,9 @@ def main(
             time.sleep(1)
             __delete_database()
 
-    def __insert_data_into_database(arg1, arg2, arg3, arg4, arg5, arg6):
+    def __insert_data_into_database(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
         try:
-            cmd = "insert into stage3(file_name, file_path, hash_id, model_type, tag_name, tag_prob) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"')"
+            cmd = "insert into stage3(file_name, file_path, type, hash_id, model_type, tag_name, tag_prob) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"', '"+arg7+"')"
             with sqlite3.connect(DATABASE_PATH) as conn:
                 conn.execute(cmd)
                 conn.commit()
@@ -151,6 +151,8 @@ def main(
             if(str(e).find('lock') != -1 or str(e).find('attempt to write a readonly database') != -1):
                 time.sleep(1)
 
+    print (f'[INFO] Writing to database table in {DATABASE_PATH}')
+    
     __delete_all_data_in_database()
 
     # Extracting data from json_result from dataset
@@ -168,6 +170,7 @@ def main(
             __insert_data_into_database(
                 file_name,
                 file_path,
+                os.path.splitext(file_name)[-1],
                 hash_id,
                 model_type,
                 tag_name,

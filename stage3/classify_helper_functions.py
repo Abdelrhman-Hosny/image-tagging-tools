@@ -463,7 +463,6 @@ def classify_to_bin(
     return None 
 
 
-
 def file_to_hash(file_path: str):
     """converts file (.gif or else) into blake 2b hash
 
@@ -479,8 +478,6 @@ def file_to_hash(file_path: str):
         print(f"[ERROR]  cannot compute hash for {file_path} , {e}")
         return None 
     return compute_blake2b(Image.open(file_path))
-
-
 
 def empty_dirs_check(dir_path : str):
       """ Checking for empty directory"""
