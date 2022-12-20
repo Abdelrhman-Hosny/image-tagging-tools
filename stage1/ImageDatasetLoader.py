@@ -102,7 +102,7 @@ class ImageDatasetLoader:
         #os.system(f'rm -r {gif_path}') # Delete the .gif file 
 
     @staticmethod
-    def clean_file(file_path: str):
+    def check_file(file_path: str):
         """This function takes a file path and see if it is supported or not. 
             :param file_path: path of the file to work with 
             :type file_path: str
@@ -111,11 +111,9 @@ class ImageDatasetLoader:
             try : 
                 ImageDatasetLoader.convert_gif_to_image(file_path)
             except Exception as e:
-                print(f"[Warning] problem with {file_path}, {e}")
+                print(f"[WARNING] problem with {file_path}, {e}")
             if os.path.exists(file_path):
-                print(f"[Warning] removing {file_path}")
-                os.remove(file_path)
-                #os.system(f'rm {file_path}')
+                print(f"[WARNING] file {file_path} is not supported and will be ignored")
             return 
 
     @staticmethod
@@ -133,31 +131,23 @@ class ImageDatasetLoader:
         for dir in os.listdir(dir_path):
             sub_dir = os.path.join(dir_path, dir)
             
-            if os.path.isfile(sub_dir): # It is a file. Check and break if it is stand alone. Otherwise perform cleean_file()
-                if only_sub_dir: # no subfiles allowed for example in the pixel-art-tagged 
-                    '''RV: Deactivated since it should not delete anything. Prompt error instead'''
-                    # os.remove(sub_dir)
-                    # print(f"[Removing] {sub_dir}")
-                    # continue 
-                    raise Exception ('[Error: Input dataset contains stand-alone file(s)...]')
+            if os.path.isfile(sub_dir): # It is a file. Check and break if it is outside of tag folder
+                if only_sub_dir: 
+                    '''RV: Deletion codes are removed since it should not delete anything. Prompt error instead'''
+                    raise Exception (f'[ERROR: Input dataset contains file outside of tag folder: {sub_dir}]')
 
-                ImageDatasetLoader.clean_file(sub_dir)
+                ImageDatasetLoader.check_file(sub_dir)
                 continue
 
-            if len(os.listdir(sub_dir)) == 0: # Empty folder, delete it 
-                '''RV: Deactivated since it should not delete anything. Prompt error instead'''
-                # shutil.rmtree(sub_dir)
-                # #os.system(f'rm -r {sub_dir}') 
-                # print(f'[Removing] {sub_dir}')
-                # continue
-                raise Exception ('[Error: Input dataset contains empty folder(s)...]')
+            if len(os.listdir(sub_dir)) == 0: # Empty folder
+                '''RV: Deletion codes are removed since it should not delete anything. Prompt error instead'''
+                raise Exception (f'[ERROR]: Input dataset contains empty folder: {sub_dir}]')
 
             if os.path.isdir(sub_dir) and only_sub_dir: # move to the sub-directory and clean it.
                 ImageDatasetLoader.clean_directory(sub_dir)
             else:
-                '''RV: Deactivated since it should not delete anything. Prompt error instead'''
-                #shutil.rmtree(sub_dir)  
-                raise Exception ('[Error: Dataset format is possible invalid...]')
+                '''RV: Deletion codes are removed since it should not delete anything. Prompt error instead'''
+                raise Exception ('[ERROR]: Dataset format is possible invalid...]')
 
     @staticmethod
     def load(dataset_path: str, tagged_dataset: bool = True,  recursive: bool = True, batch_size: int = 32): 

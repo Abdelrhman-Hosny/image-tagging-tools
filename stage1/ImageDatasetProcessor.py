@@ -292,9 +292,10 @@ class ImageDatasetProcessor:
 
         def __create_database():
             cmd1 = '''CREATE TABLE stage1 (
-            file_name TEXT    NOT NULL,
-            hash_id   TEXT    NOT NULL,
-            file_path TEXT    NOT NULL
+            file_name   TEXT    NOT NULL,
+            file_path   TEXT    NOT NULL,
+            type        TEXT    NOT NULL,
+            hash_id     TEXT    NOT NULL
             );
             '''
             db = sqlite3.connect(DATABASE_PATH)
@@ -312,9 +313,9 @@ class ImageDatasetProcessor:
                 time.sleep(1)
                 __delete_database()
 
-        def __insert_data_into_database(arg1, arg2, arg3):
+        def __insert_data_into_database(arg1, arg2, arg3, arg4):
             try:
-                cmd = "insert into stage1(file_name, hash_id, file_path) values ('"+arg1+"', '"+arg2+"', '"+arg3+"')"
+                cmd = "insert into stage1(file_name, file_path, type, hash_id) values ('"+arg1+"', '"+arg2+"', '"+arg3+"','"+arg4+"')"
                 with sqlite3.connect(DATABASE_PATH) as conn:
                     conn.execute(cmd)
                     conn.commit()
@@ -324,14 +325,21 @@ class ImageDatasetProcessor:
 
         __delete_all_data_in_database()
 
+        print (f'[INFO] Writing to database table in {DATABASE_PATH}')
+
         # Extracting data from json_result from dataset
         json_keys = list(json_result.keys())
         for key in json_keys:
             # For each image, write 'file_name', hash_id' and 'file_path' to database
             file_name = json_result[key]['file_name']
+            file_path = json_result[key]['file_path']
             hash_id = json_result[key]['hash_id']
-            file_path = os.path.split(json_result[key]['file_path'])[0]
-            __insert_data_into_database(file_name, hash_id, file_path)
+            __insert_data_into_database(
+                                        file_name, 
+                                        file_path, 
+                                        os.path.splitext(file_name)[-1],
+                                        hash_id
+                                        )
                 
         thread_pool.shutdown() #make sure all threads were terminated. 
 
@@ -450,3 +458,4 @@ def process_image_dataset_cli(
 if __name__ == "__main__": 
     
     fire.Fire(process_image_dataset_cli)
+    print("[INFO] Finished.")
