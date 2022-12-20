@@ -83,7 +83,7 @@ Also you may call `--help` to see the options and their defaults in the cli.
 * `test_per` _[float]_ - _[optional]_ - The percentage of the test images from the dataset, default = 0.1 
 
 
-# Stage 3: Classify Dataset
+# Stage 3: Classify Data
 
 > A script for classification models inference given images' `directory` and `metadata_json` .json file. This stage does not process .zip (archived) file.
 
