@@ -30,7 +30,7 @@ def save_json(
     with open(os.path.join(out_folder , "output.json"), "w") as outfile:
         outfile.write(json_object)
 
-def get_model_tag_name(model_file_name):
+def get_model_tag_name(model_file_name: str):
     """ get the model type and tag name given model .pkl file name.
 
     :param model_file_name: name of the .pkl file of the model.
@@ -44,18 +44,18 @@ def get_model_tag_name(model_file_name):
 
 def find_bin(
              bins_arr,
-             prob_arr
+             prob
              ):
     """ find the bin value for tag class and other class
     
     :param bins_arr: Numpy array holding the bins values.
     :type bins_arr:  NdArray
-    :param prob_arr: array holding the probabilities of it.
-    :type prob_arr:  NdArray.
+    :param prob: value of the probability to be in a certain tag..
+    :type prob:  float.
     :returns: a tuple of tag bin value and other bin value.
     :rtype: Tuple[str]
     """
-    return str(bins_arr[np.absolute(bins_arr-prob_arr[0]).argmin()]) , str(bins_arr[np.absolute(bins_arr-prob_arr[1]).argmin()])
+    return str(bins_arr[np.absolute(bins_arr-prob).argmin()]) , str(bins_arr[np.absolute(bins_arr-(1-prob)).argmin()])
 
 
 def get_bins_array(bins_number):
@@ -73,6 +73,7 @@ def get_bins_array(bins_number):
 def classify_image_prob(
                     image_features,
                     model,
+                    torch_model=False
                     ):
     """calculate the classification prediction giving model and CLIP
     image features.
@@ -81,11 +82,18 @@ def classify_image_prob(
     :type imagE_features:  [1,512] Numpy array
     :param model: Classification model from the .pkl file.
     :type model: Object.
-    :returns: an array of the predictions [probablity for the first class , probability of the second class]
-    :rtype: array
+    :param torch_model: to determin if the the moel is or not a Pytorch model.
+    :type torch_model: bool
+    :returns: value of probbility of a certain image to be in a certain tag.
+    :rtype: float
     """
-    probs = model.predict_proba(image_features)
-    return probs[0] # Index 0: for tag, Index1: for other
+    if not torch_model:
+      prob = model.predict_proba(image_features)[0][0]
+    else:
+      with torch.no_grad():
+        prob = model(torch.from_numpy(image_features.reshape(1,-1).astype(np.float32))).detach().numpy()[0][0]
+        prob = 1 - prob
+    return prob 
 
 
 def load_json(json_file_path:str):
@@ -215,10 +223,14 @@ def create_models_dict(models_path:str):
     if models_path.endswith('.pkl'):     # If it was just a single model file.
         model_name = models_path.split('.pkl')[0]
 
-        # Loading model object 
-        with open(models_path, 'rb') as model:
+        if "torch" in model_name: # Pytorch model.
+          with open(models_path, 'rb') as model:
+            models_dict[model_name] = torch.load(model)
+        else: # scikit or any other non-Pytorch model
+          with open(models_path, 'rb') as model:
             models_dict[model_name] = joblib.load(model)
-        model.close()          
+        model.close()
+
     else:                               # If it was a folder of all the models.
       for model_file in os.listdir(models_path):
           if not model_file.endswith('pkl'):
@@ -226,9 +238,12 @@ def create_models_dict(models_path:str):
 
           model_pkl_path = os.path.join(models_path , model_file)
           model_name = model_file.split('.pkl')[0]
-      
-          # Loading model object 
-          with open(model_pkl_path, 'rb') as model:
+
+          if "torch" in model_name:
+            with open(model_pkl_path, 'rb') as model:
+              models_dict[model_name] = torch.load(model)
+          else: # scikit or any other non-Pytorch model
+            with open(model_pkl_path, 'rb') as model:
               models_dict[model_name] = joblib.load(model)
           model.close()
 
@@ -333,10 +348,9 @@ def list_models(model_folder_path: str):
       continue
     models[model_type].append(tag_name)
 
-  for model_idx , model_type in enumerate(models):
-    print(f"\n{model_idx+1})  {model_type}")
+  for model_type in models:
     for tag_name in models[model_type]:
-      print(f"\t \t \t{tag_name}")
+      print(f"model-type = {model_type}, tag= {tag_name}")
 
 
 
@@ -368,7 +382,8 @@ def classify_single_model_to_bin(
                                   model_name: str,
                                   image_features,
                                   bins_array: List[float],
-                                  image_tagging_folder: str
+                                  image_tagging_folder: str,
+                                  torch_model = False
                                   ):
     """classifying image file using only a single model object.
 
@@ -384,7 +399,7 @@ def classify_single_model_to_bin(
     :type image_features: NdArray.
     """
     try :
-      image_class_prob     = classify_image_prob(image_features,model) # get the probability list
+      image_class_prob     = classify_image_prob(image_features,model ,torch_model=torch_model) # get the probability list
       model_type, tag_name = get_model_tag_name(model_name) 
       tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
 
@@ -396,7 +411,7 @@ def classify_single_model_to_bin(
 
       return  { 'model_type' : model_type,
                 'tag_name'   : tag_name,
-                'tag_prob'   : image_class_prob[0]}
+                'tag_prob'   : image_class_prob}
     except Exception as e  :
         print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_name}")
         return None
@@ -442,13 +457,16 @@ def classify_to_bin(
     classes_list = [] # a list of dict for every class 
     # loop through each model and find the classification of the image.
     for model_name in models_dict:
+        torch_model = 'torch' in model_name
         model_result_dict = classify_single_model_to_bin(
                                                           image_file_path,
                                                           models_dict[model_name],
                                                           model_name,
                                                           image_features,
                                                           bins_array,
-                                                          image_tagging_folder)
+                                                          image_tagging_folder,
+                                                          torch_model=torch_model
+                                                          )
         if model_result_dict is None:
           continue
 
