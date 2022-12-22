@@ -3,10 +3,11 @@ from stage2.train_helper_functions import *
 import os 
 from ClipTools import ClipModel
 from typing import Union
+import numpy as np
 
-class PytorchLogisticRegressionModel:
+class OvrSvmModel:
       
-    def __init__(self, tag_name: str, model_type:str = 'torch-logistic-regression', models_folder: str = os.path.join('output','models')):
+    def __init__(self, tag_name: str, model_type:str = 'ovr-svm', models_folder: str = os.path.join('output','models')):
         self.tag_name      = tag_name
         self.model_type    = model_type
         self.models_folder = models_folder
@@ -22,7 +23,6 @@ class PytorchLogisticRegressionModel:
         image_features = clip_image_features(ImageData,ClipModel.clip,ClipModel.preprocess,ClipModel.device)        
         return classify_image_prob(image_features, self.model ,torch_model=self.is_torch)
 
-
     def CalculateTagWeightFromImagefile(self, ImageFilePath: str, ClipModel: ClipModel):
         image_features = clip_image_features(ImageFilePath,ClipModel.clip,ClipModel.preprocess,ClipModel.device)        
         return classify_image_prob(image_features, self.model ,torch_model=self.is_torch)
@@ -31,10 +31,13 @@ class PytorchLogisticRegressionModel:
         return classify_image_prob(ImageFeatures, self.model ,torch_model=self.is_torch)
 
 
-def CalculateTagWeightFromImageData(Model: PytorchLogisticRegressionModel, ImageData: Union[bytes,bytearray] ,ClipModel: ClipModel):
+def CalculateTagWeightFromImageData(Model: OvrSvmModel, ImageData: Union[bytes,bytearray] ,ClipModel: ClipModel):
     return Model.CalculateTagWeightFromImageData(ImageData, ClipModel)
 
 
-def CalculateTagWeightFromImagefile(Model: PytorchLogisticRegressionModel, ImageFilePath: str ,ClipModel: ClipModel):
+def CalculateTagWeightFromImagefile(Model: OvrSvmModel, ImageFilePath: str ,ClipModel: ClipModel):
     return Model.CalculateTagWeightFromImagefile(ImageFilePath, ClipModel)
 
+
+def CalculateTagWeightFromClipFeatures(Model: OvrSvmModel ,ImageFeatures: np.ndarray):
+    return  Model.CalculateTagWeightFromClipFeatures(ImageFeatures)
