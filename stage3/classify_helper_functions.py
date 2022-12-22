@@ -630,10 +630,35 @@ def classify_image_bin(
               mapper['1'].strip() : second_class_bin
             }
 
+class FolderFilter:
+
+      def __init__(self, folder_path: str):
+        self.folder_path = folder_path
+        self.allowed_extension = ('.gif','.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
 
 
+      def __accepted_file(self, file_path):
+        """A test of a file to see if it matches a group of criteria or not"""
 
-    
+        return os.path.isfile(file_path) and os.path.basename(file_path).endswith(self.allowed_extension)
+            
+      
+      def run(self):
+        """ Loops over a folder and returns a list of the path it should classifiy/pre-compute
+        this is just a stage for future stages. Instead of deleting, ignoring.
+        """        
+        files_list = [] # a list of all files in the folder after filtering.
+        for file_name in os.listdir(self.folder_path):
+            file_path = os.path.join(self.folder_path, file_name)
+
+            if self.__accepted_file(file_path):
+              files_list.append(file_path)
+        
+        return files_list
+
+      
+
+
 
 
 
