@@ -1,9 +1,9 @@
 
 
 ### Pipeline Colab Notebook
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/jupyter-notebook-example.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/image_tagging_tools-examples.ipynb)
 
-You can run the pipeline on google colab using the following [link](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/jupyter-notebook-example.ipynb)
+You can run the pipeline on google colab using the following [link](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/image_tagging_tools-examples.ipynb)
 
 ## Installation
 All what's needed to start using the pipeline locally is to have python 3.9+ then run the following command
