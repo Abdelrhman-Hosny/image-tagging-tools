@@ -464,6 +464,63 @@ def classify_to_bin(
     print(f"[ERROR] {e} in file {os.path.basename(img_file_name)}")
     return None 
 
+def classify_to_bin_no_json(
+                    img,
+                    img_file_name: str,
+                    models_dict: dict,
+                    image_tagging_folder: str,
+                    bins_array: List[float],
+                    clip_model,
+                    preprocess,
+                    device
+                    ):
+  """classification for a single image through all the models.
+
+  :param image_file_path: path to the image will be classified.
+  :type image-file_path: str
+  :param models_dict: dictionary of all available classification models.
+  :type models_dict: dict
+  :param metadata_json_object: a dictioanry loaded from the .json file.
+  :type  metadata_json_object: dict
+  :param image_tagging_folder: path to the image tagging folder (output folder)
+  :type image_tagging-folder: str
+  :param bins_array: array of all available bins for classification.
+  :type bins_array: List[float]
+  :param clip_model: CLIP model object for getting the image features.
+  :type clip_model. CLIP
+  :param preprocess: preprocessing object for images before getting into CLIP.
+  :type preprocess: Object.
+  :param device: device name
+  :type device: str
+  """
+  try:    
+    blake2b_hash = file_to_hash(img, img_file_name)
+
+    image_features = clip_image_features(img, img_file_name, clip_model,preprocess,device) # Calculate image features.
+
+    classes_list = [] # a list of dict for every class 
+    # loop through each model and find the classification of the image.
+    for model_name in models_dict:
+        model_result_dict = classify_single_model_to_bin(
+                                                          img,
+                                                          img_file_name,
+                                                          models_dict[model_name],
+                                                          model_name,
+                                                          image_features,
+                                                          bins_array,
+                                                          image_tagging_folder)
+        if model_result_dict is None:
+          continue
+
+        classes_list.append(model_result_dict)
+
+    return {'hash_id'  :  blake2b_hash,
+            'file_path': img_file_name,
+            'classifiers_output': classes_list}
+
+  except Exception as e :
+    print(f"[ERROR] {e} in file {os.path.basename(img_file_name)}")
+    return None 
 
 
 def file_to_hash(img, img_file_name):
