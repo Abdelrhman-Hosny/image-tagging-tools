@@ -25,6 +25,21 @@ class ModelLoader:
             for model in os.path.join(self.models_folder, sub_dir):
                 model_type, tag_name = get_model_tag_name(os.path.splitext(model)[0])
                 print(f"model-type = {model_type}, tag= {tag_name}")
+    
+    def listModelTypes(self):       
+        for sub_dir in os.listdir(self.models_folder):
+            if os.path.isdir(os.path.join(self.models_folder,sub_dir)):
+                print(f"model-type {sub_dir}")
+    
+    
+    def listTags(self, model_type: str):
+        model_type_folder = os.path.join(self.models_folder, model_type)
+
+        for model in os.listdir(model_type_folder):
+            _ , tag_name = get_model_tag_name(os.path.splitext(model)[0])
+            print(f"tag= {tag_name}")
+
+
 
     def LoadModel(self, tag_name: str , model_type: str):
         """Load a model based on tag name and model type"""
