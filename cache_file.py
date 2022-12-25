@@ -1,18 +1,14 @@
 import os
 import sqlite3
-import argparse
 import os
 import sqlite3
-import time
-import numpy as np
 from zipfile import ZipFile
 from PIL import Image
 import hashlib
-import tqdm
 
 '''
 Class Name: FileCache
-DEscription: A class to create, add and fetch image data tp .sqlite database file.
+Description: A class to create, add and fetch image data to .sqlite database file.
 '''
 
 class FileCache(object):
@@ -29,7 +25,7 @@ class FileCache(object):
         db_path = f'{out_dir}/{db_name}'
 
         def __create_database(db_path):
-            cmd1 = '''CREATE TABLE file_cache (
+            cmd = '''CREATE TABLE file_cache (
             file_name   TEXT    NOT NULL,
             path   TEXT            ,
             hash_id   TEXT          ,
@@ -40,11 +36,15 @@ class FileCache(object):
             parent_folder    TEXT            
             );
             '''
-            db = sqlite3.connect(db_path)
-            c = db.cursor()
-            c.execute('PRAGMA encoding="UTF-8";')
-            c.execute(cmd1)
-            db.commit()
+            with sqlite3.connect(db_path) as conn:
+                conn.execute('PRAGMA encoding="UTF-8";')
+                conn.execute(cmd)
+                conn.commit()
+            # db = sqlite3.connect(db_path)
+            # c = db.cursor()
+            # c.execute('PRAGMA encoding="UTF-8";')
+            # c.execute(cmd1)
+            # db.commit()
 
         #make sure result output path exists 
         os.makedirs(out_dir, exist_ok = True) 
@@ -90,7 +90,7 @@ class FileCache(object):
                     conn.commit()
                 print (f'[INFO] Table "file_cache" on {db_path} database has been cleared.')
         except Exception as e:
-            print ('[ERROR]: Insert file to cache failed, file cache database does not exist or might be in use!')
+            print (f'[ERROR]: Clearing data from database failed, file cache database does not exist or might be in use!')
 
     def get_random_hash(self, db_path):
         try:
@@ -101,7 +101,7 @@ class FileCache(object):
                 for row in cur:
                     return {'hash_id':row[0]}
         except Exception as e:
-            print ('[ERROR]: Insert file to cache failed, file cache database does not exist or might be in use!')
+            print (f'[ERROR]: {e} Getting random hash from cache failed, file cache database does not exist or might be in use!')
 
     def get_img_by_hash(self, db_path, hash_id=''):
         try:
@@ -120,7 +120,7 @@ class FileCache(object):
                             'container_archive':row[6],
                             }
         except Exception as e:
-            print ('[ERROR]: Insert file to cache failed, file cache database does not exist or might be in use!')
+            print ('[ERROR]: Getting image data failed, file cache database does not exist or might be in use!')
 
     def get_random_image(self, db_path):
         try:
