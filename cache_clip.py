@@ -27,16 +27,20 @@ class ClipCache(object):
         db_path = f'{out_dir}/{db_name}'
 
         def __create_database(db_path):
-            cmd1 = '''CREATE TABLE clip_cache (
+            cmd = '''CREATE TABLE clip_cache (
             hash_id   TEXT          ,
             clip_vector   BLOB            
             );
             '''
-            db = sqlite3.connect(db_path)
-            c = db.cursor()
-            c.execute('PRAGMA encoding="UTF-8";')
-            c.execute(cmd1)
-            db.commit()
+            with sqlite3.connect(db_path) as conn:
+                conn.execute('PRAGMA encoding="UTF-8";')
+                conn.execute(cmd)
+                conn.commit()
+            # db = sqlite3.connect(db_path)
+            # c = db.cursor()
+            # c.execute('PRAGMA encoding="UTF-8";')
+            # c.execute(cmd1)
+            # db.commit()
 
         #make sure result output path exists 
         os.makedirs(out_dir, exist_ok = True) 
