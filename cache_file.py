@@ -31,9 +31,8 @@ class FileCache(object):
             hash_id   TEXT          ,
             type            TEXT    ,
             is_archive   TEXT    ,
-            n_img_content   INTEGER     ,
-            container_archive   TEXT,
-            parent_folder    TEXT            
+            n_content   INTEGER     ,
+            container_archive   TEXT            
             );
             '''
             with sqlite3.connect(db_path) as conn:
@@ -56,19 +55,19 @@ class FileCache(object):
             __create_database(db_path)
             print (f'[INFO]: database {db_path} created')
 
-    def insert_file_to_cache(self, db_path, arg1, arg2, arg3, arg4, arg5, arg6):
+    def insert_file_to_cache(self, db_path, arg1, arg2, arg3, arg4, arg5):
         try:
-            cmd = "insert into file_cache(file_name, path, hash_id, type, container_archive, parent_folder) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"')"
+            cmd = "insert into file_cache(file_name, path, hash_id, type, container_archive) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"')"
             with sqlite3.connect(db_path) as conn:
                 conn.execute(cmd)
                 conn.commit()
         except Exception as e:
             print ('[ERROR]: Insert file to cache failed, file cache database does not exist or might be in use!')
 
-    def insert_zip_to_cache(self, db_path, arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    def insert_zip_to_cache(self, db_path, arg1, arg2, arg3, arg4, arg5, arg6):
         try:
-            cmd = "insert into file_cache(file_name, path, type, is_archive, n_img_content, container_archive, parent_folder) values ('"+arg1+"','"+arg2+"','"+arg3+"','"+arg4+"','"+arg5+"','"+arg6+"','"+arg7+"')"
-            #cmd = "insert into file_cache(file_name, path, type, is_archive, n_img_content, container_archive) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"')"
+            cmd = "insert into file_cache(file_name, path, type, is_archive, n_content, container_archive) values ('"+arg1+"','"+arg2+"','"+arg3+"','"+arg4+"','"+arg5+"','"+arg6+"')"
+            #cmd = "insert into file_cache(file_name, path, type, is_archive, n_content, container_archive) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"')"
             with sqlite3.connect(db_path) as conn:
                 conn.execute(cmd)
                 conn.commit()
@@ -116,7 +115,7 @@ class FileCache(object):
                             'hash_id':row[2],
                             'file_type':row[3],
                             'is_archive':row[4],
-                            'n_img_content':row[5],
+                            'n_content':row[5],
                             'container_archive':row[6],
                             }
         except Exception as e:
@@ -135,7 +134,7 @@ class FileCache(object):
                             'hash_id':row[2],
                             'file_type':row[3],
                             'is_archive':row[4],
-                            'n_img_content':row[5],
+                            'n_content':row[5],
                             'container_archive':row[6],
                             }
         
@@ -150,6 +149,8 @@ class FileCache(object):
 
         if data_file.endswith('.zip'):
             # Selected data_dir is a zip archive
+
+            print (f'[INFO] Processing ZIP archive: {data_file}')
             
             with ZipFile(data_file) as archive:
 
@@ -168,7 +169,7 @@ class FileCache(object):
 
                             if entry.filename.lower().endswith(('.zip')):
                                 # Another zip file found in the content.
-                                #print (f'[INFO] Fetching ZIP archive: {data_file}/{entry.filename}')
+                                print (f'[INFO] Processing ZIP archive: {data_file}/{entry.filename}')
                                 # Process the content of the zip file
                                 with ZipFile(file) as sub_archive:
 
@@ -183,21 +184,21 @@ class FileCache(object):
                                         with sub_archive.open(sub_entry) as sub_file:
                                             try:
                                                 img = Image.open(sub_file)
-                                                img_file_name = f'{data_file}/{sub_entry.filename}'
-                                                #print (f' Fetching: {img_file_name}')
+                                                img_file_name = f'{data_file}/{entry.filename}/{sub_entry.filename}'
+                                                print (f' Fetching: {img_file_name}')
                                                 yield (img, img_file_name)
                                             except:
-                                                print (f'[WWARNING] Failed to fetch {os.path.join(data_file, sub_entry.filename)}')
+                                                print (f'[WWARNING] Failed to fetch {os.path.join(data_file, entry.filename, sub_entry.filename)}')
                                                 continue
                             else:
                                 # Should be image file. Read it.
                                 try:
                                     img = Image.open(file)
-                                    img_file_name = entry.filename
-                                    #print (f' Fetching: {img_file_name}')
+                                    img_file_name = f'{data_file}/{entry.filename}'
+                                    print (f' Fetching: {img_file_name}')
                                     yield (img, img_file_name)
                                 except:
-                                    print (f'[WARNING] Failed to fetch {entry.filename}')
+                                    print (f'[WARNING] Failed to fetch {data_file}/{entry.filename}')
                                     continue
         else:
             # Should be image file. Read it.
@@ -233,7 +234,7 @@ class FileCache(object):
                     print(f'[WARNING] Empty folder found. Ignoring it: {sub_dir}')
                     continue
 
-    def add_folder_to_img_cache(self, data_dir, out_dir=out_dir, db_name = db_name):
+    def add_folder_to_file_cache(self, data_dir, out_dir=out_dir, db_name = db_name):
         '''Load images to file-cache'''
         
         db_path = f'{out_dir}/{db_name}'
@@ -265,11 +266,11 @@ class FileCache(object):
                 for img, file_path in self.data_gen(file):
                     file_name = os.path.basename(file_path)
                     type = os.path.splitext(file_name)[-1]
-                    tag_folder = os.path.split(os.path.splitext(os.path.split(file_path)[0])[0])[-1]
+                    #tag_folder = os.path.split(os.path.splitext(os.path.split(file_path)[0])[0])[-1]
                     # Compute hash
                     hash = self.compute_hash(img, file_path)  
                     # Insert image to cache
-                    self.insert_file_to_cache(db_path, file_name, file_path, hash, type, container_archive, tag_folder)  
+                    self.insert_file_to_cache(db_path, file_name, file_path, hash, type, container_archive)  
 
             # Insert zip files to cache
             for _zip in self.zips_info:
@@ -277,11 +278,12 @@ class FileCache(object):
                 if parent.lower().endswith(('.zip')):
                     container_archive = parent
                 else:
-                    parent_folder = parent
+                    pass
+                    #parent_folder = parent
                 file_name = os.path.basename(_zip[0])
                 arch_path = _zip[0]
                 n_content = _zip[1]
-                self.insert_zip_to_cache(db_path, file_name, arch_path, os.path.splitext(file_name)[-1], str(True), str(n_content), container_archive, parent_folder)
+                self.insert_zip_to_cache(db_path, file_name, arch_path, os.path.splitext(file_name)[-1], str(True), str(n_content), container_archive)
 
         else:
             print (f'[ERROR] Database {db_path} does not exist !')
