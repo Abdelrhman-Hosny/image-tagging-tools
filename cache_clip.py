@@ -19,6 +19,9 @@ class ClipCache(object):
 
     db_name = 'clip_cache.sqlite'
     out_dir = './output'
+    clip_model_type = 'ViT-B-32'
+    clip_model_pretrained = 'openai'
+
 
     def create_clip_cache(self, out_dir=out_dir, db_name = db_name):
         '''
@@ -29,18 +32,14 @@ class ClipCache(object):
         def __create_database(db_path):
             cmd = '''CREATE TABLE clip_cache (
             hash_id   TEXT          ,
-            clip_vector   BLOB            
+            clip_vector   BLOB      ,
+            model   TEXT      
             );
             '''
             with sqlite3.connect(db_path) as conn:
                 conn.execute('PRAGMA encoding="UTF-8";')
                 conn.execute(cmd)
                 conn.commit()
-            # db = sqlite3.connect(db_path)
-            # c = db.cursor()
-            # c.execute('PRAGMA encoding="UTF-8";')
-            # c.execute(cmd1)
-            # db.commit()
 
         #make sure result output path exists 
         os.makedirs(out_dir, exist_ok = True) 
@@ -52,14 +51,14 @@ class ClipCache(object):
             __create_database(db_path)
             print (f'[INFO]: database {db_path} created')
 
-    def insert_clip_to_cache(self, db_path, arg1, arg2):
-        #try:
-        cmd = """insert into clip_cache(hash_id, clip_vector) values (?, ?)"""
-        with sqlite3.connect(db_path) as conn:
-            conn.execute(cmd, (arg1, arg2))
-            conn.commit()
-        # except Exception as e:
-        #     print ('[ERROR]: Insert clip to cache failed, clip cache database does not exist or might be in use!')
+    def insert_clip_to_cache(self, db_path, arg1, arg2, arg3):
+        try:
+            cmd = """insert into clip_cache(hash_id, clip_vector, model) values (?, ?, ?)"""
+            with sqlite3.connect(db_path) as conn:
+                conn.execute(cmd, (arg1, arg2, arg3))
+                conn.commit()
+        except Exception as e:
+            print (f'[ERROR] {e}: Insert clip to cache failed, clip cache database does not exist or might be in use!')
 
     def clear_cache(self, db_path, delete_cache = False):
         try:
@@ -76,18 +75,18 @@ class ClipCache(object):
                     conn.commit()
                 print (f'[INFO] Table "clip_cache" on {db_path} database has been cleared.')
         except Exception as e:
-            print ('[ERROR]: Clearing data from database failed, clip cache database does not exist or might be in use!')
+            print (f'[ERROR] {e}: Clearing data from database failed, clip cache database does not exist or might be in use!')
 
     def get_random_hash(self, db_path):
-        #try:
-        cmd = "SELECT hash_id FROM clip_cache ORDER BY RANDOM() LIMIT 1 ;"
-        with sqlite3.connect(db_path) as conn:
-            cur = conn.cursor()
-            cur.execute(cmd)
-            for row in cur:
-                return {'hash_id':row[0]}
-        #except Exception as e:
-        #    print ('[ERROR]: Getting random hash from cache failed, clip cache database does not exist or might be in use!')
+        try:
+            cmd = "SELECT hash_id FROM clip_cache ORDER BY RANDOM() LIMIT 1 ;"
+            with sqlite3.connect(db_path) as conn:
+                cur = conn.cursor()
+                cur.execute(cmd)
+                for row in cur:
+                    return {'hash_id':row[0]}
+        except Exception as e:
+           print (f'[ERROR] {e}: Getting random hash from cache failed, clip cache database does not exist or might be in use!')
 
     def get_clip_by_hash(self, db_path, hash_id=''):
         try:
@@ -98,10 +97,11 @@ class ClipCache(object):
                 for row in cur:
                     return {
                             'hash_id':row[0],
-                            'clip_vector': pickle.loads(row[1])
+                            'clip_vector': pickle.loads(row[1]),
+                            'model' : row[2]
                             }
         except Exception as e:
-            print ('[ERROR]: Getting clip vector failed, clip cache database does not exist or might be in use!')
+            print (f'[ERROR] {e}: Getting clip vector failed, clip cache database does not exist or might be in use!')
 
     def get_random_clip(self, db_path):
         try:
@@ -113,10 +113,11 @@ class ClipCache(object):
                     return {
                             'hash_id':row[0],
                             'clip_vector': pickle.loads(row[1]),
+                            'model' : row[2]
                             }
         
         except Exception as e:
-            print ('[ERROR]: Getting clip vector failed, clip cache database does not exist or might be in use!')
+            print (f'[ERROR] {e}: Getting clip vector failed, clip cache database does not exist or might be in use!')
 
 
     def data_gen(self, data_file):
@@ -179,7 +180,7 @@ class ClipCache(object):
                 # Compute hash
                 return hashlib.blake2b(img.tobytes()).hexdigest()
             except Exception as e:
-                print(f"[ERROR]  cannot compute hash for {img_file_name} , {e}")
+                print(f"[ERROR] {e}:  cannot compute hash for {img_file_name}")
                 return None 
         return hashlib.blake2b(img.tobytes()).hexdigest()
 
@@ -224,7 +225,7 @@ class ClipCache(object):
         # Setting the database path
         db_path = f'{out_dir}/{db_name}'
         # Getting clip model
-        clip_model , preprocess , device = self.get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
+        clip_model , preprocess , device = self.get_clip(clip_model_type= self.clip_model_type, pretrained= self.clip_model_pretrained)
 
         if (os.path.exists(db_path)):
 
@@ -255,7 +256,7 @@ class ClipCache(object):
                     clip_vector = self.get_clip_vector(img, file, clip_model,preprocess,device)
                     clip_vector = pickle.dumps(clip_vector)
                     # Insert image to cache
-                    self.insert_clip_to_cache(db_path, hash, clip_vector)  
+                    self.insert_clip_to_cache(db_path, hash, clip_vector, f'{self.clip_model_type}:{self.clip_model_pretrained}')  
 
         else:
             print (f'[ERROR] Database {db_path} does not exist !')

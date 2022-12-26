@@ -152,7 +152,7 @@ class TagCache(object):
                                                 print (f' Processing: {img_file_name}')
                                                 yield (img, img_file_name)
                                             except:
-                                                print (f'[WARNING] Failed to process {os.path.join(data_file, sub_entry.filename)}')
+                                                print (f'[WARNING] Failed to process {os.path.join(data_file, entry.filename, sub_entry.filename)}')
                                                 continue
                             else:
                                 # Should be image file. Read it.
@@ -162,7 +162,7 @@ class TagCache(object):
                                     print (f' Processing: {img_file_name}')
                                     yield (img, img_file_name)
                                 except:
-                                    print (f'[WARNING] Failed to process {entry.filename}')
+                                    print (f'[WARNING] Failed to process {data_file}/{entry.filename}')
                                     continue
         else:
             # Should be image file. Read it.
