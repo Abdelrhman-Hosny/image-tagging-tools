@@ -140,7 +140,7 @@ class FileCache(object):
                             }
         
         except Exception as e:
-            print ('[ERROR]: Insert file to cache failed, file cache database does not exist or might be in use!')
+            print ('[ERROR]: Getting image data failed, file cache database does not exist or might be in use!')
 
 
     def data_gen(self, data_file):
