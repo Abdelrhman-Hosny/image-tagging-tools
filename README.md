@@ -171,7 +171,7 @@ Also you may call `--help` to see the options and their defaults in the cli.
 ## Module Description
 The File Cache module defined in `cache_file.py` contains the class definition with the following functions:
 
-* _class_  __`cache_file`__`.FileCache` - A class to construct file cache object.
+* _class_  `cache_file`.__`FileCache`__ - A class to construct file cache object.
 * __`create_file_cache`__(_`out_dir = './output'`_, _`db_name = 'file_cache.sqlite'`_) - Method to create file cache database with default name `file_cache.sqlite` and default location in project `./output` directory. The file cache database will not be created if the database with same name path already exist.
 * __`add_folder_to_file_cache`__(_`data_dir`_, _`out_dir = './output'`_, _`db_name = 'file_cache.sqlite'`_) - Method to add image files contained in a folder / directory specified in `data_dir` to file cache database specified in `db_name` at location `out_dir` directory.
 * __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from file cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
