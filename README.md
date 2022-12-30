@@ -129,8 +129,6 @@ Also you may call `--help` to see the options and their defaults in the cli.
 
 > A script for classification models inference given images' `directory` and `metadata_json` .json file. This stage only process .zip (archived) file. It is used if the image data specified in `directory` argument is either in .zip archived format or containing images archived in .zip format. 
 
-
-
 ## Tool Description
 
 Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder, the script start to loop over every image and make the classification for it using every binary classification model. In addition, the SQLite database named `stage4.db` (containing file name, file path, archive path, type of file, hash, model type, tag name and tag score for given images) will be created in the `output` folder in the root directory. 
@@ -166,6 +164,59 @@ Also you may call `--help` to see the options and their defaults in the cli.
 * `model` _[string]_ - _[optional]_ - The path to the models' .pkl files directory or single .pkl file model.
 * `output_bins` _[int]_ - _[optional]_ -  The number of bins of the results for each model.
 
+
+# File Cache Module
+> A tool to create file cache in the form of SQLite database, add data to and fetch from it. File cache contains attributes for each file in given directory or folder. The attributes for each file are represented by the following fields in file cache SQLite database table: `hash_id`, `file_name`, `path`, `type`, `is_archive`, `n_content` and `container_archive`.
+
+## Module Description
+The File Cache module defined in `cache_file.py` contains the class definition with the following functions:
+
+* _class_  __`cache_file`__`.FileCache` - A class to construct file cache object.
+* __`create_file_cache`__(_`out_dir = './output'`_, _`db_name = 'file_cache.sqlite'`_) - Method to create file cache database with default name `file_cache.sqlite` and default location in project `./output` directory. The file cache database will not be created if the database with same name path already exist.
+* __`add_folder_to_file_cache`__(_`data_dir`_, _`out_dir = './output'`_, _`db_name = 'file_cache.sqlite'`_) - Method to add image files contained in a folder / directory specified in `data_dir` to file cache database specified in `db_name` at location `out_dir` directory.
+* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from file cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
+* __`get_img_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image file data from file cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash, `file_name` - image file name, `path` - image file path, `type` - image file type, `is_archive` - will be `True` if the file is ZIP archive, `n_content` - for ZIP archive, indicate the number of contained image file,  `container_archive` - the name of containing ZIP archive if the image file is contained in ZIP archive.
+* __`get_random_image`__(_`db_path`_) - Method to fetch image file data from file cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_img_by_hash()` method above.
+* __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in file cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the file cache SQLite database file will be removed.
+
+## Usage Example
+
+```python
+
+from cache_file import FileCache
+
+# Create file cache object
+fileCache = FileCache()
+
+# Create file cache database. Default to './output/file_cache.sqlite')
+fileCache.create_file_cache()
+
+# Adding image files contained in a folder or ZIP archive to file cache database
+fileCache.add_folder_to_file_cache('./dataset/testdata1.zip')
+
+# Get random file hash_id
+hash_dict = fileCache.get_random_hash('./output/file_cache.sqlite')
+hash_id = hash_dict['hash_id']
+
+# Fetch image file data from file cache database with specific hash
+img_dict = fileCache.get_img_by_hash('./output/file_cache.sqlite', hash_id)
+''' Example img_dict:
+{'file_name': '10_1.jpg',
+ 'file_path': './dataset/testdata1.zip/testdata1/10_1.jpg',
+ 'hash_id': '7bd45969bb6ffc6486fd560e42ab6ed1b788f3bb8541480be893da6ca4fcbff55b7d97e3505dc715fa962a23d24b7325a044206078390c08d63ac03d9fd4f67a',
+ 'file_type': '.jpg',
+ 'is_archive': None,
+ 'n_content': None,
+ 'container_archive': './dataset/testdata1.zip'
+ }
+'''
+# Fetch random image file data from file cache database.
+img_dict = fileCache.get_random_image('./output/file_cache.sqlite')
+
+# Clear all data from the table in file cache database.
+img_dict = fileCache.clear_cache('./output/file_cache.sqlite', delete_cache=False)
+
+```
 
 
 
