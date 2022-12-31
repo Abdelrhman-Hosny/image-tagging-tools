@@ -1,7 +1,5 @@
 import os
 import sqlite3
-import os
-import sqlite3
 from zipfile import ZipFile
 from PIL import Image
 import hashlib
