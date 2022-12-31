@@ -169,7 +169,7 @@ Also you may call `--help` to see the options and their defaults in the cli.
 > A tool to create file cache in the form of SQLite database, add data to and fetch from it. File cache contains attributes for each file in given directory or folder. The attributes for each file are represented by the following fields in file cache SQLite database table: `hash_id`, `file_name`, `path`, `type`, `is_archive`, `n_content` and `container_archive`.
 
 ## Module Description
-The File Cache module defined in `cache_file.py` contains the class definition with the following functions:
+The file cache module defined in `cache_file.py` contains the class definition with the following functions:
 
 * _class_  `cache_file`.__`FileCache`__ - A class to construct file cache object.
 * __`create_file_cache`__(_`out_dir = './output'`_, _`db_name = 'file_cache.sqlite'`_) - Method to create file cache database with default name `file_cache.sqlite` and default location in project `./output` directory. The file cache database will not be created if the database with same name path already exist.
@@ -214,10 +214,108 @@ img_dict = fileCache.get_img_by_hash('./output/file_cache.sqlite', hash_id)
 img_dict = fileCache.get_random_image('./output/file_cache.sqlite')
 
 # Clear all data from the table in file cache database.
-img_dict = fileCache.clear_cache('./output/file_cache.sqlite', delete_cache=False)
+fileCache.clear_cache('./output/file_cache.sqlite', delete_cache=False)
 
 ```
 
+# CLIP Cache Module
+> A tool to create, add and fetch CLIP vector data to .sqlite database file. CLIP cache contains CLIP vector data for each image file in given directory or folder. The attributes for each image file are represented by the following fields: `hash_id`, `clip_vector` and `model`.
+
+## Module Description
+The CLIP cache module defined in `cache_clip.py` contains the class definition with the following functions:
+
+* _class_  `cache_clip`.__`ClipCache`__ - A class to construct CLIP cache object.
+* __`create_clip_cache`__(_`out_dir = './output'`_, _`db_name = 'clip_cache.sqlite'`_) - Method to create CLIP cache database with default name `clip_cache.sqlite` and default location in project `./output` directory. The CLIP cache database will not be created if the database with same name path already exist.
+* __`add_folder_to_clip_cache`__(_`data_dir`_, _`out_dir = './output'`_, _`db_name = 'clip_cache.sqlite'`_) - Method to add image files contained in a folder / directory specified in `data_dir` to CLIP cache database specified in `db_name` at location `out_dir` directory.
+* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from CLIP cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
+* __`get_clip_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image CLIP vector from CLIP cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash in `str` format, `clip_vector` - image CLIP vector in numpy array format, `model` - model type that is used to generate image CLIP vector in `str` format.
+* __`get_random_clip`__(_`db_path`_) - Method to fetch image CLIP vector from CLIP cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_clip_by_hash()` method above.
+* __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in CLIP cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the CLIP cache SQLite database file will be removed.
+
+## Usage Example
+
+```python
+
+from cache_clip import ClipCache
+
+# Create CLIP cache object
+clipCache = ClipCache()
+
+# Create CLIP cache database. Default to './output/clip_cache.sqlite')
+clipCache.create_clip_cache()
+
+# Adding image files contained in a folder or ZIP archive to CLIP cache database
+clipCache.add_folder_to_clip_cache('./dataset/testdata1.zip')
+
+# Get random file hash_id
+hash_dict = clipCache.get_random_hash('./output/clip_cache.sqlite')
+hash_id = hash_dict['hash_id']
+
+# Fetch CLIP vector data from CLIP cache database with specific hash
+clip_dict = clipCache.get_clip_by_hash('./output/clip_cache.sqlite', hash_id)
+
+# Fetch random CLIP vector data from CLIP cache database.
+clip_dict = clipCache.get_random_clip('./output/clip_cache.sqlite')
+
+# Getting data
+clip_vector = clip_dict['clip_vector']
+hash_id = clip_dict['hash_id']
+model = clip_dict['model']
+
+# Clear all data from the table in CLIP cache database.
+clipCache.clear_cache('./output/clip_cache.sqlite', delete_cache=False)
+
+```
+
+# Tag Cache Module
+> A tool to create, add and fetch image tag data to .sqlite database file. Tag cache contains tag data for each image file in given directory or folder. The attributes for each image file are represented by the following fields: `hash_id` and `tag`.
+
+## Module Description
+The tag cache module defined in `cache_tag.py` contains the class definition with the following functions:
+
+* _class_  `cache_tag`.__`TagCache`__ - A class to construct tag cache object.
+* __`create_tag_cache`__(_`out_dir = './output'`_, _`db_name = 'tag_cache.sqlite'`_) - Method to create tag cache database with default name `tag_cache.sqlite` and default location in project `./output` directory. The tag cache database will not be created if the database with same name path already exist.
+* __`add_folder_to_tag_cache`__(_`data_dir`_, _`out_dir = './output'`_, _`db_name = 'tag_cache.sqlite'`_) - Method to add image files contained in a folder / directory specified in `data_dir` to tag cache database specified in `db_name` at location `out_dir` directory.
+* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from tag cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
+* __`get_tag_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image tag from tag cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash in `str` format, `tag` - image tag in `str` format.
+* __`get_random_tag`__(_`db_path`_) - Method to fetch image tag from tag cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_tag_by_hash()` method above.
+* __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in tag cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the tag cache SQLite database file will be removed.
+
+## Usage Example
+
+```python
+
+from cache_tag import TagCache
+
+# Create tag cache object
+tagCache = TagCache()
+
+# Create tag cache database. Default to './output/tag_cache.sqlite')
+tagCache.create_tag_cache()
+
+# Adding image files contained in a folder or ZIP archive to tag cache database
+tagCache.add_folder_to_tag_cache('./dataset/testdata1.zip')
+
+# Get random file hash_id
+hash_dict = tagCache.get_random_hash('./output/tag_cache.sqlite')
+hash_id = hash_dict['hash_id']
+
+# Fetch tag from tag cache database with specific hash
+tag_dict = tagCache.get_tag_by_hash('./output/tag_cache.sqlite', hash_id)
+
+# Fetch random tag from tag cache database.
+tag_dict = tagCache.get_random_tag('./output/tag_cache.sqlite')
+
+# Getting data
+hash_id = tag_dict['hash_id']
+tag = tag_dict['tag']
+print (f'hash: {hash_id}, tag: {tag}')
+
+# Clear all data from the table in tag cache database.
+tagCache.clear_cache('./output/tag_cache.sqlite', delete_cache=False)
+
+
+```
 
 
 # Examples

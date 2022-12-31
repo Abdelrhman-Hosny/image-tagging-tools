@@ -1,14 +1,12 @@
 import os
 import sqlite3
-import os
-import sqlite3
 from zipfile import ZipFile
 from PIL import Image
 import hashlib
 
 '''
 Class Name: TagCache
-Description: A class to create .sqlite database file and add, fetch and clear image tag data to it.
+Description: A class to create .sqlite database file, add and fetch image tag data to it.
 '''
 
 # Takes directory that contains dataset images
