@@ -317,6 +317,66 @@ tagCache.clear_cache('./output/tag_cache.sqlite', delete_cache=False)
 
 ```
 
+# Cache Web API Module
+> A web API that wraps functions on File Cache, CLIP Cache and Tag Cache modules.
+
+## Module Description
+The web API module contains all functions defined in File Cache, CLIP Cache and Tag Cache modules above that is callable via HTTP request.
+
+## Usage Example
+
+Start the FLASK web server. This example use localhost with IP address 127.0.0.1 and port 5000.
+```
+$env:FLASK_APP='cache_web_api.py'
+python -m flask run
+```
+
+URL Request should follow the following format. Specify argument with query string using '?' and separate between arguments with '&'.
+```
+http://<ip_address>:<port>/<function_name>?argument_1=value_1&argument_n=value_n
+```
+
+Creating file cache with default to ./output/file_cache.sqlite
+```
+http://127.0.0.1:5000/create_file_cache
+```
+
+Add image files contained in a folder / directory specified in `data_dir` to file cache database at default location `./output/file_cache.sqlite`
+```
+http://127.0.0.1:5000/add_folder_to_file_cache?data_dir=./dataset/testfolder.zip
+```
+
+Fetch random file hash from file cache database specified in `db_path`. This returns JSON similar with Python dict described in File Cache module section.
+```
+http://127.0.0.1:5000/get_random_file_hash?db_path=./output/file_cache.sqlite
+```
+
+Fetch image file data from file cache database specified in `db_path` with specific hash `hash_id`. This returns JSON similar with Python dict described in File Cache module section.
+```
+http://localhost:5000/get_img_by_hash?db_path=./output/file_cache.sqlite&hash_id=7bd45969bb6ffc6486fd560e42ab6ed1b788f3bb8541480be893da6ca4fcbff55b7d97e3505dc715fa962a23d24b7325a044206078390c08d63ac03d9fd4f67a
+```
+
+Fetch random image file data from file cache database specified in `db_path`. This returns JSON similar with Python dict described in File Cache module section.
+```
+http://127.0.0.1:5000/get_random_img?db_path=./output/file_cache.sqlite
+```
+
+Clear all data from the table in file cache database specified in `db_path`. 
+```
+http://127.0.0.1:5000/clear_file_cache?db_path=./output/file_cache.sqlite
+```
+
+Remove file cache database file specified in `db_path`
+```
+http://127.0.0.1:5000/clear_file_cache?db_path=./output/file_cache.sqlite&delete_cache=True
+```
+
+
+* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from file cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
+* __`get_img_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image file data from file cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash, `file_name` - image file name, `path` - image file path, `type` - image file type, `is_archive` - will be `True` if the file is ZIP archive, `n_content` - for ZIP archive, indicate the number of contained image file,  `container_archive` - the name of containing ZIP archive if the image file is contained in ZIP archive.
+* __`get_random_image`__(_`db_path`_) - Method to fetch image file data from file cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_img_by_hash()` method above.
+* __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in file cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the file cache SQLite database file will be removed.
+
 
 # Examples
 
