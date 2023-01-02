@@ -42,7 +42,7 @@ class TagCache(object):
         os.makedirs(out_dir, exist_ok = True) 
         # Check for existing file
         if(os.path.exists(db_path)):
-            print (f'[ERROR]: Previous {db_name} already exist in {db_path}. File-cache creation stopped.')
+            print (f'[ERROR]: Previous {db_name} already exist in {db_path}. Tag-cache creation stopped.')
             return None
         else:
             __create_database(db_path)
