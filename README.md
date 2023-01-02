@@ -371,13 +371,6 @@ Remove file cache database file specified in `db_path`
 http://127.0.0.1:5000/clear_file_cache?db_path=./output/file_cache.sqlite&delete_cache=True
 ```
 
-
-* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from file cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
-* __`get_img_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image file data from file cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash, `file_name` - image file name, `path` - image file path, `type` - image file type, `is_archive` - will be `True` if the file is ZIP archive, `n_content` - for ZIP archive, indicate the number of contained image file,  `container_archive` - the name of containing ZIP archive if the image file is contained in ZIP archive.
-* __`get_random_image`__(_`db_path`_) - Method to fetch image file data from file cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_img_by_hash()` method above.
-* __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in file cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the file cache SQLite database file will be removed.
-
-
 # Examples
 
 ## Listing all the models.
