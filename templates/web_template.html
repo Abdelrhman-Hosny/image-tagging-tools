@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Image Tagging Web API</title>
+        <style>
+            body {
+                font-family: 'JetBrains Mono';
+                font-weight: bold;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <p>File Name: {{ file_name }}</p>
+        <p>Path: {{ file_path }}</p>
+        <p>Container Archive: {{ container_archive }}</p>
+        <p>Hash_ID: {{ hash_id }}</p>
+        <p>Request Time {{ request_time }}</p>
+        <img id="Image" src="data:image/jpeg;base64,{{ img_data }}" alt ="Image Not Found"/>
+    
+    </body>
+</html>
