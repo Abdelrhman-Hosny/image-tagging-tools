@@ -210,16 +210,11 @@ class FileCache(object):
 
     def compute_hash(self, img, img_file_name):
         '''Compute image file to hash'''
-        if img_file_name.lower().endswith('.gif'): # If it's GIF then convert to image and exit 
-            try : 
-                # Convert gif to image
-                img.seek(0)
-                # Compute hash
-                return hashlib.blake2b(img.tobytes()).hexdigest()
-            except Exception as e:
-                print(f"[ERROR]  cannot compute hash for {img_file_name} , {e}")
-                return None 
-        return hashlib.blake2b(img.tobytes()).hexdigest()
+        try:
+            return hashlib.blake2b(img.tobytes()).hexdigest()
+        except Exception as e:
+            print(f"[ERROR] {e}:  cannot compute hash for {img_file_name}")
+            return None 
 
     def empty_dirs_check(self, dir_path):
         """ Checking for empty directory and print out warning if any"""
