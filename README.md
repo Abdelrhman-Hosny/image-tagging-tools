@@ -318,57 +318,26 @@ tagCache.clear_cache('./output/tag_cache.sqlite', delete_cache=False)
 ```
 
 # Cache Web API Module
-> A web API that wraps functions on File Cache, CLIP Cache and Tag Cache modules.
+> A web API for getting random image file and show its relevant data as follows: file name, file path, image size, container archive, hash ID, request time and the image itself.
 
 ## Module Description
-The web API module contains all functions defined in File Cache, CLIP Cache and Tag Cache modules above that is callable via HTTP request.
+The web API module runs FLASK-based server and contains functions to fetch random file from file cache database and returns its respective data (file name, file path, image size, container archive, hash ID, request time and the image itself) based on HTTP request made from web browser.
 
 ## Usage Example
 
-Start the FLASK web server. This example use localhost with IP address 127.0.0.1 and port 5000.
+Start the web API module. In default, the server runs on host `0.0.0.0` and port `8080`.
 ```
-$env:FLASK_APP='cache_web_api.py'
-python -m flask run
+python cache_web_api.py
 ```
-
-URL Request should follow the following format. Specify argument with query string using '?' and separate between arguments with '&'.
+or start the web API in other host and port using `host` and `port` CLI arguments as the follows.
 ```
-http://<ip_address>:<port>/<function_name>?argument_1=value_1&argument_n=value_n
+python cache_web_api.py --host=0.0.0.0 --port=8000
 ```
 
-Creating file cache with default to ./output/file_cache.sqlite
-```
-http://127.0.0.1:5000/create_file_cache
-```
+Fetch random image from file cache database specified in `db_path`. This returns HTML page containing file name, file path, image size, container archive, hash ID, request time and the image itself. Specify the `db_path` as argument with query string using '?' and its value after `=`.
 
-Add image files contained in a folder / directory specified in `data_dir` to file cache database at default location `./output/file_cache.sqlite`
 ```
-http://127.0.0.1:5000/add_folder_to_file_cache?data_dir=./dataset/testfolder.zip
-```
-
-Fetch random file hash from file cache database specified in `db_path`. This returns JSON similar with Python dict described in File Cache module section.
-```
-http://127.0.0.1:5000/get_random_file_hash?db_path=./output/file_cache.sqlite
-```
-
-Fetch image file data from file cache database specified in `db_path` with specific hash `hash_id`. This returns JSON similar with Python dict described in File Cache module section.
-```
-http://localhost:5000/get_img_by_hash?db_path=./output/file_cache.sqlite&hash_id=7bd45969bb6ffc6486fd560e42ab6ed1b788f3bb8541480be893da6ca4fcbff55b7d97e3505dc715fa962a23d24b7325a044206078390c08d63ac03d9fd4f67a
-```
-
-Fetch random image file data from file cache database specified in `db_path`. This returns JSON similar with Python dict described in File Cache module section.
-```
-http://127.0.0.1:5000/get_random_img?db_path=./output/file_cache.sqlite
-```
-
-Clear all data from the table in file cache database specified in `db_path`. 
-```
-http://127.0.0.1:5000/clear_file_cache?db_path=./output/file_cache.sqlite
-```
-
-Remove file cache database file specified in `db_path`
-```
-http://127.0.0.1:5000/clear_file_cache?db_path=./output/file_cache.sqlite&delete_cache=True
+http://127.0.0.1:8080/get_random_img?db_path=./output/file_cache.sqlite
 ```
 
 # Examples
