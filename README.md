@@ -325,7 +325,7 @@ The web API module runs FLASK-based server and contains functions to fetch rando
 
 ## Usage Example
 
-Start the web API module. In default, the server runs on host `0.0.0.0` and port `8080`.
+Start the web API module form CLI. In default, the server runs on host `0.0.0.0` and port `8080`.
 ```
 python cache_web_api.py
 ```
@@ -334,7 +334,7 @@ or start the web API in other host and port using `host` and `port` CLI argument
 python cache_web_api.py --host=0.0.0.0 --port=8000
 ```
 
-Fetch random image from file cache database specified in `db_path`. This returns HTML page containing file name, file path, image size, container archive, hash ID, request time and the image itself. Specify the `db_path` as argument with query string using '?' and its value after `=`.
+Fetch random image from file cache database specified in `db_path`. The following URL request (made from web browser) will return HTML page containing file name, file path, image size, container archive, hash ID, request time and the image itself. Specify the `db_path` as argument with query string using '?' and its value after `=`.
 
 ```
 http://127.0.0.1:8080/get_random_img?db_path=./output/file_cache.sqlite
