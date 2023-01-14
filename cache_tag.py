@@ -99,6 +99,22 @@ class TagCache(object):
         except Exception as e:
             print (f'[ERROR] {e}: Getting tag failed, tag cache database does not exist or might be in use!')
 
+
+    def get_hash_by_tag(self, db_path, tag=''):
+        # Output a list containing hash_id for given tag
+        try:
+            hash_ids=[]
+            cmd = "SELECT * FROM tag_cache WHERE tag = '"+tag+"'"
+            with sqlite3.connect(db_path) as conn:
+                cur = conn.cursor()
+                cur.execute(cmd)
+                for row in cur:
+                    hash_ids.append(row[0])
+            return hash_ids
+        except Exception as e:
+            print (f'[ERROR] {e}: Getting tag failed, tag cache database does not exist or might be in use!')
+
+
     def get_random_tag(self, db_path):
         try:
             cmd = "SELECT * FROM tag_cache ORDER BY RANDOM() LIMIT 1 ;"
