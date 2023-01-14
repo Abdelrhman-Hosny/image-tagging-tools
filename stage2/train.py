@@ -4,7 +4,7 @@ from sklearn.linear_model import LogisticRegression
 import warnings
 import numpy as np
 from train_helper_functions import *
-import torch
+from datetime import datetime
 
 warnings.filterwarnings('ignore')
 
@@ -34,6 +34,8 @@ def main(
     if metadata_dict is None or tag_to_hash_json is None : # Problem happened with the json file loading.
         return
 
+    # Get training start time
+    t_start = datetime.now()
     # get the two output folder paths (models and reports) with respect to \
     # the output directory provided in the script.
     report_out_folder , models_out_folder = check_out_folder(output_dir) 
@@ -94,7 +96,8 @@ def main(
             # generate report for ovr logistic regression model.
             generate_report(report_out_folder , tag , text_file_lines , model_name=model_type)
             # generate model pickle file.
-            generate_model_file(models_out_folder, classifier, tag, model_name=model_type)
+
+            generate_model_file(models_out_folder, classifier, model_type, t_start, tag, lr)
 
     print("[INFO] Finished.")
 

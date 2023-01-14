@@ -288,7 +288,9 @@ def generate_report(
 
 def generate_model_file(
                         models_output_folder : str, 
-                        classifier, 
+                        classifier,
+                        model_type,
+                        train_start_time, 
                         tag_name : str, 
                         model_name :str
                        ):
@@ -309,11 +311,9 @@ def generate_model_file(
     # save classifier object into pickle file. 
     model_file_name = f'model-{model_name}-tag-{tag_name}'
     pickle_file_path = os.path.join(models_output_folder , f'{model_file_name}.pkl')
-    
-    if model_name.split('-')[0] == 'torch':
-        torch.save(classifier, pickle_file_path)
-        return   
 
+    model_dict = {'classifier':classifier, 'model_type': model_type, 'train_start_time': train_start_time, 'tag': tag_name}
+    joblib.dump(model_dict , pickle_file_path)
     joblib.dump(classifier , pickle_file_path)
     return 
 

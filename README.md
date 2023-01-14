@@ -416,4 +416,67 @@ classify_main(
 
 ```
 
+## Get List of File Hash_ID from Tag Cache Based on List of Models or Specific Model
+
+```python
+
+import json
+from cache_tag import TagCache
+from api_model import ModelApi
+
+# Specify path to tag cache file
+tag_cache_path = './output/tag_cache.sqlite'
+# Specify path to directory containing model pickle files or specific model pickle file
+models_path = './output/models/'
+
+# Output placeholder
+model_tag_cache_pair = {}
+
+try:
+    # Create tag cache object
+    tag_cache = TagCache()
+    # Create model api object
+    model_api=ModelApi()
+
+    # Getting models
+    ret, models_dict = model_api.get_models_dict(models_path=models_path)
+    '''
+    Example stucture of models_dict
+    {<model_name>: 
+        {'classifier' : <model object>,
+        'model_type' : <model type string>,
+        'train_start_time' : <traing start time datetime object>
+        'tag' : <tag string>
+        }
+    }
+    '''
+
+    # Get tags from models_dict
+    for model in models_dict:
+        # Get list of images (hash_IDs) based on each model's tag name
+        hash_ids = tag_cache.get_hash_by_tag(db_path = tag_cache_path, tag = models_dict[model]['tag'])
+        # Append list of hash IDs to the result dict
+        model_tag_cache_pair[model] = hash_ids
+    
+    # Output
+    print(json.dumps(model_tag_cache_pair, indent=2))
+
+except Exception as e:
+    print (f'[ERROR] {e}: Getting data from tag cache failed')
+
+```
+
+## Get List of File Hash_ID from Tag Cache Based on List of Models or Specific Model (CLI Version)
+
+```
+python get_tag_cache_by_model.py --tag_cache_path=./output/tag_cache.sqlite --models_path=./output/models/
+```
+
+## CLI Arguments
+
+* `tag_cache_path` _[string]_ - _[required]_ - Path to the tag cache file.
+* `models_path` _[string]_ - _[required]_ - Path to directory containing model pickle files or specific model pickle file.
+
+
+
 
