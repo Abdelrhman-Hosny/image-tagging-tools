@@ -5,6 +5,7 @@ from typing import List, Tuple, Union
 from ascii_graph import Pyasciigraph
 import joblib
 import json
+import torch
 
 
 def make_dir(dir_names : Union[List[str] , str]):
@@ -59,9 +60,9 @@ def load_json(json_file_path:str):
 
 
 def get_train_test(
-                    tag_all_emb_list   : List, 
-                    other_all_emb_list : List,
-                    test_per : float
+                    tag_all_emb_list: List, 
+                    other_all_emb_list: List,
+                    test_per: float
                     ):
     """takes embeding list of tag/class and other images,
     converts them into arrays ready for the training/testing.
@@ -95,7 +96,7 @@ def get_train_test(
 
     # size of the number of the test set of the tag/class 
     other_n_test = int(test_per*len(other_all_emb_list)) if  int(test_per*len(other_all_emb_list))  > 0 else 1 
-    test_other_emb_list    = other_all_emb_list[:other_n_test]   # test other embeddings.
+    test_other_emb_list    = other_all_emb_list[:other_n_test]    # test other embeddings.
     test_emb_list.extend(test_other_emb_list)
     test_other_label_list  = [1] * len(test_other_emb_list)       # test labels for other embeddings.        
     test_label_list.extend(test_other_label_list) 
@@ -106,7 +107,7 @@ def get_train_test(
 
     # convert all of these lists into numpy arrays and returns them. 
     return np.array(train_emb_list), np.array(train_label_list), np.array(test_emb_list), np.array(test_label_list), \
-           tag_n_test , other_n_test
+           tag_n_test, other_n_test
 
 
 def calc_confusion_matrix(
@@ -159,6 +160,7 @@ def histogram_list(
                    image_features_list,
                    reg_model,
                    other = False,
+                   using_torch=False,
                    ):
         """calculate the histogram for a group of images in features.
 
@@ -180,9 +182,13 @@ def histogram_list(
                      } # dictionary of histogram values 
   
         for image_features in image_features_list:
-            
-            prob = reg_model.predict_proba(image_features.reshape(1,-1))[0][1] if other else reg_model.predict_proba(image_features.reshape(1,-1))[0][0]
-        
+            if not using_torch:
+                prob = reg_model.predict_proba(image_features.reshape(1,-1))[0][1] if other else reg_model.predict_proba(image_features.reshape(1,-1))[0][0]
+            else:
+                other_prob = reg_model(torch.from_numpy(image_features.reshape(1,-1).astype(np.float32))).detach().numpy()[0][0]
+                tag_prob   = (1 - other_prob)
+                prob = other_prob if other else tag_prob
+         
             # Choosing the bin of the image for index 0 
             if 0.0 <= prob <= 0.1 : 
                 hist_dict['0.1'] += 1
@@ -258,7 +264,7 @@ def generate_report(
                     reports_output_folder : str,
                     tag_name : str, 
                     text_file_lines : List[str], 
-                    lr : bool
+                    model_name: str,
                     ):
     """generate text file with text file lines provided, 
        save it in output directory.
@@ -267,12 +273,12 @@ def generate_report(
        :type reports_output_folder: str
        :param tag_name: name of the classifer tag.
        :type tag_name: str
-       :param lr: is it logistic regression model ot not.
-       :type  lr: bool
+       :param model_name: name of the model .
+       :type  model_name: str
        :rtype: None. 
     """
 
-    model_file_name = f'model-report-ovr-logistic-regression-tag-{tag_name}' if lr else f'model-report-ovr-svm-tag-{tag_name}'
+    model_file_name = f'model-report-{model_name}-tag-{tag_name}'
     text_file_path = os.path.join(reports_output_folder ,f'{model_file_name}.txt' )
     with open( text_file_path ,"w+", encoding="utf-8") as f:
         f.writelines(text_file_lines)
@@ -286,7 +292,7 @@ def generate_model_file(
                         model_type,
                         train_start_time, 
                         tag_name : str, 
-                        lr : bool 
+                        model_name :str
                        ):
     """
     takes model's object and convert it into pickle file.
@@ -297,16 +303,68 @@ def generate_model_file(
     :type classifer: Object
     :param tag_name: name of the tag of the classifer.
     :type tag_name: str
-    :param lr: to determine whether it is logistic regression model 
-               or not.
-    :type lr: bool
+    :param model_name: name of the model .
+    :type  model_name: str
     :rtype: None 
     """
 
     # save classifier object into pickle file. 
-    model_file_name = f'model-ovr-logistic-regression-tag-{tag_name}' if lr else f'model-ovr-svm-tag-{tag_name}'
+    model_file_name = f'model-{model_name}-tag-{tag_name}'
     pickle_file_path = os.path.join(models_output_folder , f'{model_file_name}.pkl')
+
     model_dict = {'classifier':classifier, 'model_type': model_type, 'train_start_time': train_start_time, 'tag': tag_name}
     joblib.dump(model_dict , pickle_file_path)
-
+    joblib.dump(classifier , pickle_file_path)
     return 
+
+
+# Logistic Regression Pytorch class.
+class LogisticRegressionPytorch(torch.nn.Module):
+     def __init__(self, input_dim, output_dim):
+         super(LogisticRegressionPytorch, self).__init__()
+         self.linear = torch.nn.Linear(input_dim, output_dim)
+     def forward(self, x):
+         return torch.sigmoid(self.linear(x))
+
+def train_loop(
+                model: LogisticRegressionPytorch,
+                train_emb,
+                train_labels,
+                epochs: int = 20000, 
+                ) -> LogisticRegressionPytorch:
+    """Taining loop for LogisticRegressionPytorch object.
+    
+    :param model: LogisticRegressionPytorch model object
+    :type model: LogisticRegressionPytorch
+    :param train_emb: embedding for the training features.
+    :type train_emb: Numpy.Ndarray.
+    :param train_labels: labels for training set.
+    :type train_labels: Numpy.NdArray.
+    :param epochs: number of epochs
+    :type epochs: int
+    :returns: model after training. 
+    :rtype: LogisticRegressionPytorch
+    """
+
+    # Converting the dataset into Pytorch tensors.
+    train_emb   =torch.from_numpy(train_emb.astype(np.float32))
+    train_labels=torch.from_numpy(train_labels.astype(np.float32))
+    train_labels=train_labels.view(train_labels.shape[0],1)
+
+    criterion   = torch.nn.BCELoss()
+    optimizer   = torch.optim.SGD(model.parameters(),lr=0.01)
+
+    for epoch in range(epochs+1):
+        
+        y_prediction=model(train_emb)
+        loss=criterion(y_prediction,train_labels)
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+        
+        # if (epoch+1)%10000 == 0:
+        #     print('epoch:', epoch+1,',loss=',loss.item())
+    
+    return model
+
+

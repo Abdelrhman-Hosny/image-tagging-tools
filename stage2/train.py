@@ -56,23 +56,33 @@ def main(
 
         # get train test embeddings and labels.
         train_emb, train_labels, test_emb, test_labels , t_n , o_n = get_train_test(tag_all_emb_list, other_all_emb_list , test_per)
-
-        for model_type in ['ovr-LR' , 'ovr-svm' ]:
+        # ovr-logistic-regression , ovr-svm ,  
+        for model_type in ['ovr-logistic-regression' , 'ovr-svm' , 'torch-logistic-regression' ]:
             
             # make the classifer object 
-            if model_type == 'ovr-LR':
+            if model_type == 'ovr-logistic-regression':
                 classifier = LogisticRegression(random_state=0, multi_class='ovr') # initiate classifer object. 
-            else:
+            elif model_type == 'ovr-svm':
                 classifier = SVC(decision_function_shape='ovo' , probability = True)
+            else:
+                classifier = LogisticRegressionPytorch(input_dim = 512, output_dim=1)
             
-            classifier.fit(train_emb, train_labels)
+            if model_type == 'torch-logistic-regression':
+                classifier = train_loop(model = classifier, train_emb=train_emb, train_labels=train_labels)
+            else:
+                classifier.fit(train_emb, train_labels)
 
-            # Evaluate the classifier 
-            predictions = classifier.predict(test_emb)
-
+            if model_type == 'torch-logistic-regression':
+                test_emb = torch.from_numpy(test_emb.astype(np.float32))
+                predictions = classifier(test_emb)
+                predictions = predictions.round().view(1,-1).squeeze().detach().numpy()
+            else:
+                # Evaluate the classifier 
+                predictions = classifier.predict(test_emb)
+            
             # get histogram data.
-            in_tag_tagged  = histogram_list(np.array(tag_all_emb_list), classifier,  other=False) # histogram data for in-tag images 
-            out_tag_tagged = histogram_list(np.array(other_val_all_emb_list), classifier,  other=True) # histogram data for out-tag images
+            in_tag_tagged  = histogram_list(np.array(tag_all_emb_list), classifier, other=False, using_torch=(model_type == 'torch-logistic-regression')) # histogram data for in-tag images 
+            out_tag_tagged = histogram_list(np.array(other_val_all_emb_list), classifier,  other=True, using_torch=(model_type == 'torch-logistic-regression')) # histogram data for out-tag images
             
             # put all lines for text file report in one .
             text_file_lines = [ f"model: {model_type}\n", "task: binary-classification\n",
@@ -84,9 +94,9 @@ def main(
             text_file_lines.extend(histogram_lines(out_tag_tagged,'out-distribution')) 
 
             # generate report for ovr logistic regression model.
-            lr  = model_type == 'ovr-LR' 
-            generate_report(report_out_folder , tag , text_file_lines , lr)
+            generate_report(report_out_folder , tag , text_file_lines , model_name=model_type)
             # generate model pickle file.
+
             generate_model_file(models_out_folder, classifier, model_type, t_start, tag, lr)
 
     print("[INFO] Finished.")
