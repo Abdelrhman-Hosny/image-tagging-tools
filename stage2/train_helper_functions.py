@@ -282,7 +282,9 @@ def generate_report(
 
 def generate_model_file(
                         models_output_folder : str, 
-                        classifier, 
+                        classifier,
+                        model_type,
+                        train_start_time, 
                         tag_name : str, 
                         lr : bool 
                        ):
@@ -304,6 +306,7 @@ def generate_model_file(
     # save classifier object into pickle file. 
     model_file_name = f'model-ovr-logistic-regression-tag-{tag_name}' if lr else f'model-ovr-svm-tag-{tag_name}'
     pickle_file_path = os.path.join(models_output_folder , f'{model_file_name}.pkl')
-    joblib.dump(classifier , pickle_file_path)
+    model_dict = {'classifier':classifier, 'model_type': model_type, 'train_start_time': train_start_time, 'tag': tag_name}
+    joblib.dump(model_dict , pickle_file_path)
 
     return 

@@ -217,8 +217,10 @@ def create_models_dict(models_path:str):
 
         # Loading model object 
         with open(models_path, 'rb') as model:
-            models_dict[model_name] = joblib.load(model)
-        model.close()          
+          # model is a dict with the following structure
+          # {'classifier': <classifier>, 'model_type': <model_type>, 'train_start_time': <train_start_time>, 'tag': <tag_name>}
+          models_dict[model_name] = joblib.load(model)
+        
     else:                               # If it was a folder of all the models.
       for model_file in os.listdir(models_path):
           if not model_file.endswith('pkl'):
@@ -229,10 +231,12 @@ def create_models_dict(models_path:str):
       
           # Loading model object 
           with open(model_pkl_path, 'rb') as model:
-              models_dict[model_name] = joblib.load(model)
-          model.close()
+            # model is a dict with the following structure
+            # {'classifier': <classifier>, 'model_type': <model_type>, 'train_start_time': <train_start_time>, 'tag': <tag_name>}
+            models_dict[model_name] = joblib.load(model)
 
     return models_dict
+
 
 def create_mappings_dict(mappings_path:str):
     """take the path of the mappings' folder, load all of them in one dict
@@ -394,14 +398,15 @@ def classify_single_model_to_bin(
       # Copy the file from source to destination 
       shutil.copy(image_file_path,tag_name_out_folder)
 
-      return  { 'model_type' : model_type,
+      return  { 'model_name' : model_name,
+                'model_type' : model_type,
                 'tag_name'   : tag_name,
                 'tag_prob'   : image_class_prob[0]}
+                
     except Exception as e  :
         print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_name}")
         return None
       
-
 
 def classify_to_bin(
                     image_file_path: str,
@@ -440,19 +445,23 @@ def classify_to_bin(
         image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
 
     classes_list = [] # a list of dict for every class 
+
     # loop through each model and find the classification of the image.
     for model_name in models_dict:
-        model_result_dict = classify_single_model_to_bin(
-                                                          image_file_path,
-                                                          models_dict[model_name],
-                                                          model_name,
-                                                          image_features,
-                                                          bins_array,
-                                                          image_tagging_folder)
-        if model_result_dict is None:
-          continue
+      # Take the classifier from models_dict[model_name]
+      classifier = models_dict[model_name]['classifier']
+      model_result_dict = classify_single_model_to_bin(
+                                                        image_file_path,
+                                                        classifier,
+                                                        model_name,
+                                                        image_features,
+                                                        bins_array,
+                                                        image_tagging_folder
+                                                        )
+      if model_result_dict is None:
+        continue
 
-        classes_list.append(model_result_dict)
+      classes_list.append(model_result_dict)
 
     return {'hash_id'  :  blake2b_hash,
             'file_path': image_file_path,

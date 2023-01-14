@@ -108,7 +108,7 @@ def main(
     db_out_dir = './output'
     #make sure result output path exists 
     os.makedirs(db_out_dir, exist_ok = True)
-    DATABASE_NAME = '/stage3.db'
+    DATABASE_NAME = '/stage3.sqlite'
     DATABASE_PATH = f'{db_out_dir}/{DATABASE_NAME}'
 
     def __delete_all_data_in_database():
@@ -121,6 +121,7 @@ def main(
         file_path   TEXT    NOT NULL,
         type        TEXT    ,
         hash_id     TEXT    ,
+        model_name  TEXT    ,
         model_type  TEXT    ,
         tag_name    TEXT    ,
         tag_prob    REAL    
@@ -141,9 +142,9 @@ def main(
             time.sleep(1)
             __delete_database()
 
-    def __insert_data_into_database(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    def __insert_data_into_database(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
         try:
-            cmd = "insert into stage3(file_name, file_path, type, hash_id, model_type, tag_name, tag_prob) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"', '"+arg7+"')"
+            cmd = "insert into stage3(file_name, file_path, type, hash_id, model_name, model_type, tag_name, tag_prob) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"', '"+arg7+"', '"+arg8+"')"
             with sqlite3.connect(DATABASE_PATH) as conn:
                 conn.execute(cmd)
                 conn.commit()
@@ -164,6 +165,7 @@ def main(
         hash_id = out_json[key]['hash_id']
         model_outs = out_json[key]['classifiers_output']
         for out in model_outs:
+            model_name = out['model_name']
             model_type = out['model_type']
             tag_name = out ['tag_name']
             tag_prob = out ['tag_prob']
@@ -172,6 +174,7 @@ def main(
                 file_path,
                 os.path.splitext(file_name)[-1],
                 hash_id,
+                model_name,
                 model_type,
                 tag_name,
                 str(tag_prob)
