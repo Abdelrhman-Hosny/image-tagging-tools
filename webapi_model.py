@@ -24,7 +24,7 @@ def get_models_dict():
     {<model_name>: 
         {'classifier' : <model object>,
          'model_type' : <model type string>,
-         'train_start_time' : <traing start time datetime object>
+         'train_start_time' : <training start time datetime object>
          'tag' : <tag string>
         }
     }
@@ -38,7 +38,7 @@ def get_models_dict():
             # Create a new dict without classifier object
             models_json[model].pop('classifier')
             # Stringify the train_start_time datetime object
-            models_json[model]['train_start_time'] = models_json[model]['train_start_time'].strftime('%d-%m-%y, %H:%M:%S')
+            models_json[model]['train_start_time'] = models_json[model]['train_start_time'].strftime('%Y-%m-%d, %H:%M:%S')
         
         print(json.dumps(models_json, indent=2))
         return (json.dumps(models_json, indent=2))

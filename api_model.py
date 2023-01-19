@@ -4,7 +4,18 @@ import joblib
 class ModelApi(object):
 
     def get_models_dict(self, models_path):
-        '''Returns models dictionary for model pickle file in given models_path'''
+        '''
+        Returns models dictionary for model pickle file in given models_path.
+
+        Example stucture of models_dict
+        {<model_name>: 
+            {'classifier' : <model object>,
+            'model_type' : <model type string>,
+            'train_start_time' : <training start time datetime object>
+            'tag' : <tag string>
+            }
+        }
+        '''
 
         models_dict={} # Dictionary for all the models objects
         
@@ -25,7 +36,7 @@ class ModelApi(object):
                         continue
                     model_pkl_path = os.path.join(models_path , model_file)
                     model_name = os.path.splitext(model_file)[0]
-                # Loading model object 
+                    # Loading model object 
                     with open(model_pkl_path, 'rb') as model:
                         models_dict[model_name] = joblib.load(model)
                         
