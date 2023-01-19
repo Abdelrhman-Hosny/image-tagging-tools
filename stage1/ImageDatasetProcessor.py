@@ -283,7 +283,7 @@ class ImageDatasetProcessor:
         Creating database and table for writing json_result data from dataset
         '''
         
-        DATABASE_NAME = '/stage1.db'
+        DATABASE_NAME = 'dataset_cache.sqlite'
         DATABASE_PATH = f'{output_folder}/{DATABASE_NAME}'
         
         def __delete_all_data_in_database():
@@ -291,7 +291,7 @@ class ImageDatasetProcessor:
             __create_database()
 
         def __create_database():
-            cmd1 = '''CREATE TABLE stage1 (
+            cmd1 = '''CREATE TABLE dataset_cache (
             file_name   TEXT    NOT NULL,
             file_path   TEXT    NOT NULL,
             type        TEXT    NOT NULL,
@@ -315,7 +315,7 @@ class ImageDatasetProcessor:
 
         def __insert_data_into_database(arg1, arg2, arg3, arg4):
             try:
-                cmd = "insert into stage1(file_name, file_path, type, hash_id) values ('"+arg1+"', '"+arg2+"', '"+arg3+"','"+arg4+"')"
+                cmd = "insert into dataset_cache(file_name, file_path, type, hash_id) values ('"+arg1+"', '"+arg2+"', '"+arg3+"','"+arg4+"')"
                 with sqlite3.connect(DATABASE_PATH) as conn:
                     conn.execute(cmd)
                     conn.commit()
