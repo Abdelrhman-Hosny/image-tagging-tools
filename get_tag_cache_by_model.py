@@ -25,7 +25,7 @@ def get_tag_cache_by_model(tag_cache_path, models_path):
         {<model_name>: 
             {'classifier' : <model object>,
             'model_type' : <model type string>,
-            'train_start_time' : <traing start time datetime object>
+            'train_start_time' : <training start time datetime object>
             'tag' : <tag string>
             }
         }
