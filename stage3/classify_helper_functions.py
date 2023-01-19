@@ -11,6 +11,8 @@ import json
 import hashlib
 import datetime
 import numpy as np
+import io
+
 
 def save_json(
               dict_obj,
@@ -30,7 +32,7 @@ def save_json(
     with open(os.path.join(out_folder , "output.json"), "w") as outfile:
         outfile.write(json_object)
 
-def get_model_tag_name(model_file_name):
+def get_model_tag_name(model_file_name: str):
     """ get the model type and tag name given model .pkl file name.
 
     :param model_file_name: name of the .pkl file of the model.
@@ -44,18 +46,18 @@ def get_model_tag_name(model_file_name):
 
 def find_bin(
              bins_arr,
-             prob_arr
+             prob
              ):
     """ find the bin value for tag class and other class
     
     :param bins_arr: Numpy array holding the bins values.
     :type bins_arr:  NdArray
-    :param prob_arr: array holding the probabilities of it.
-    :type prob_arr:  NdArray.
+    :param prob: value of the probability to be in a certain tag..
+    :type prob:  float.
     :returns: a tuple of tag bin value and other bin value.
     :rtype: Tuple[str]
     """
-    return str(bins_arr[np.absolute(bins_arr-prob_arr[0]).argmin()]) , str(bins_arr[np.absolute(bins_arr-prob_arr[1]).argmin()])
+    return str(bins_arr[np.absolute(bins_arr-prob).argmin()]) , str(bins_arr[np.absolute(bins_arr-(1-prob)).argmin()])
 
 
 def get_bins_array(bins_number):
@@ -73,6 +75,7 @@ def get_bins_array(bins_number):
 def classify_image_prob(
                     image_features,
                     model,
+                    torch_model=False
                     ):
     """calculate the classification prediction giving model and CLIP
     image features.
@@ -81,11 +84,18 @@ def classify_image_prob(
     :type imagE_features:  [1,512] Numpy array
     :param model: Classification model from the .pkl file.
     :type model: Object.
-    :returns: an array of the predictions [probablity for the first class , probability of the second class]
-    :rtype: array
+    :param torch_model: to determin if the the moel is or not a Pytorch model.
+    :type torch_model: bool
+    :returns: value of probbility of a certain image to be in a certain tag.
+    :rtype: float
     """
-    probs = model.predict_proba(image_features)
-    return probs[0] # Index 0: for tag, Index1: for other
+    if not torch_model:
+      prob = model.predict_proba(image_features)[0][0]
+    else:
+      with torch.no_grad():
+        prob = model(torch.from_numpy(image_features.reshape(1,-1).astype(np.float32))).detach().numpy()[0][0]
+        prob = 1 - prob
+    return prob 
 
 
 def load_json(json_file_path:str):
@@ -203,6 +213,18 @@ def get_clip(clip_model_type : str = 'ViT-B-32' ,
 
       return clip_model , preprocess , device
 
+# image = Image.open(io.BytesIO(bytes))
+
+def image_to_byte_array(image: Image) -> bytes:
+    # BytesIO is a fake file stored in memory
+    imgByteArr = io.BytesIO()
+    # image.save expects a file as a argument, passing a bytes io ins
+    image.save(imgByteArr, format=image.format)
+    # Turn the BytesIO object back into a bytes object
+    imgByteArr = imgByteArr.getvalue()
+    return imgByteArr
+
+
 def create_models_dict(models_path:str):
     """take the path of the models' folder, load all of them in one dict
     :param models_path: path to the models pickle files path
@@ -213,7 +235,8 @@ def create_models_dict(models_path:str):
     models_dict = {} # Dictionary for all the models objects
     
     if models_path.endswith('.pkl'):     # If it was just a single model file.
-        model_name = models_path.split('.pkl')[0]
+        model_name = os.path.basename(models_path).split('.pkl')[0]
+
 
         # Loading model object 
         with open(models_path, 'rb') as model:
@@ -262,7 +285,7 @@ def create_mappings_dict(mappings_path:str):
 
 
 def clip_image_features(
-                        image_path : str,
+                        image_path : Union[str,bytes],
                         model, 
                         preprocess,
                         device:str
@@ -281,10 +304,15 @@ def clip_image_features(
         :rtype: [1,512] Numpy array.
     """    
     with torch.no_grad():
-        
-        if image_path.lower().endswith('.gif'): 
+
+        # check if it's a byte object.
+        if isinstance(image_path, (bytes, bytearray)):
+          img_obj = Image.open(io.BytesIO(image_path))
+
+        elif image_path.lower().endswith('.gif'): 
           img_obj = convert_gif_to_image(image_path)  
-        else:
+        
+        else :
           img_obj = Image.open(image_path)
 
         image = preprocess(img_obj).unsqueeze(0).to(device)
@@ -337,10 +365,9 @@ def list_models(model_folder_path: str):
       continue
     models[model_type].append(tag_name)
 
-  for model_idx , model_type in enumerate(models):
-    print(f"\n{model_idx+1})  {model_type}")
+  for model_type in models:
     for tag_name in models[model_type]:
-      print(f"\t \t \t{tag_name}")
+      print(f"model-type = {model_type}, tag= {tag_name}")
 
 
 
@@ -363,16 +390,12 @@ def generate_model_path(
   pkl_file_path = os.path.join(model_folder_path,f'model-{model_type}-tag-{tag_name}.pkl')
   return pkl_file_path if os.path.exists(pkl_file_path) else None 
 
-
-
-
-def classify_single_model_to_bin(
+def classify_single_model_to_float(
                                   image_file_path: str,
                                   model,
                                   model_name: str,
                                   image_features,
-                                  bins_array: List[float],
-                                  image_tagging_folder: str
+                                  torch_model = False
                                   ):
     """classifying image file using only a single model object.
 
@@ -388,7 +411,53 @@ def classify_single_model_to_bin(
     :type image_features: NdArray.
     """
     try :
-      image_class_prob     = classify_image_prob(image_features,model) # get the probability list
+      return classify_image_prob(image_features,model ,torch_model=torch_model) # get the probability list
+
+    except Exception as e  :
+        print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_name}")
+        return None
+
+def classify_to_float(
+                      image_path: Union[str,bytes],
+                      model_name: str,
+                      tag_name: str
+                      ):
+  
+  """ returns the float value of the output probability from a given model"""
+  
+  clip_model, preprocess , device = get_clip()
+  
+  model_path = generate_model_path('./image-tagging-tools/output/models',model_type= model_name ,tag_name= tag_name)
+  model_dict = create_models_dict(models_path=model_path)
+
+  image_features = clip_image_features(image_path,clip_model,preprocess,device) # Calculate image features.
+
+  return classify_image_prob(image_features,model_dict[f"model-{model_name}-tag-{tag_name}"] ,torch_model=("torch" in model_name))
+
+def classify_single_model_to_bin(
+                                  image_file_path: str,
+                                  model,
+                                  model_name: str,
+                                  image_features,
+                                  bins_array: List[float],
+                                  image_tagging_folder: str,
+                                  torch_model = False
+                                  ):
+    """classifying image file using only a single model object.
+
+    :param image_file_path: path to the image file.
+    :type image_file_path: str
+    :param model: model's object.
+    :type model: Object (SVM or LogisticRegression)
+    :param model_name: name of the input model.
+    :type model_name: str.
+    :param bins_array: array including the list of the bins for classification.
+    :type bins_array: List[float]
+    :param image_features: CLIP embedding features of the input image.
+    :type image_features: NdArray.
+    """
+    try :
+      image_class_prob     = classify_image_prob(image_features,model ,torch_model=torch_model) # get the probability list
       model_type, tag_name = get_model_tag_name(model_name) 
       tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
 
@@ -402,7 +471,7 @@ def classify_single_model_to_bin(
                 'model_type' : model_type,
                 'tag_name'   : tag_name,
                 'tag_prob'   : image_class_prob[0]}
-                
+
     except Exception as e  :
         print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_name}")
         return None
@@ -448,6 +517,7 @@ def classify_to_bin(
 
     # loop through each model and find the classification of the image.
     for model_name in models_dict:
+
       # Take the classifier from models_dict[model_name]
       classifier = models_dict[model_name]['classifier']
       model_result_dict = classify_single_model_to_bin(
@@ -561,9 +631,35 @@ def classify_image_bin(
               mapper['1'].strip() : second_class_bin
             }
 
+class FolderFilter:
+
+      def __init__(self, folder_path: str):
+        self.folder_path = folder_path
+        self.allowed_extension = ('.gif','.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
 
 
-    
+      def __accepted_file(self, file_path):
+        """A test of a file to see if it matches a group of criteria or not"""
+
+        return os.path.isfile(file_path) and os.path.basename(file_path).endswith(self.allowed_extension)
+            
+      
+      def run(self):
+        """ Loops over a folder and returns a list of the path it should classifiy/pre-compute
+        this is just a stage for future stages. Instead of deleting, ignoring.
+        """        
+        files_list = [] # a list of all files in the folder after filtering.
+        for file_name in os.listdir(self.folder_path):
+            file_path = os.path.join(self.folder_path, file_name)
+
+            if self.__accepted_file(file_path):
+              files_list.append(file_path)
+        
+        return files_list
+
+      
+
+
 
 
 
