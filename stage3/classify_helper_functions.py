@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, './')
 from PIL import Image
 import os 
 import torch
@@ -12,6 +14,8 @@ import hashlib
 import datetime
 import numpy as np
 import io
+import datetime
+#from model_pytorch_logistic_regression_classifier import LogisticRegressionPytorch
 
 
 def save_json(
@@ -95,7 +99,7 @@ def classify_image_prob(
       with torch.no_grad():
         prob = model(torch.from_numpy(image_features.reshape(1,-1).astype(np.float32))).detach().numpy()[0][0]
         prob = 1 - prob
-    return prob 
+    return prob
 
 
 def load_json(json_file_path:str):
@@ -236,7 +240,6 @@ def create_models_dict(models_path:str):
     
     if models_path.endswith('.pkl'):     # If it was just a single model file.
         model_name = os.path.basename(models_path).split('.pkl')[0]
-
 
         # Loading model object 
         with open(models_path, 'rb') as model:
@@ -457,7 +460,11 @@ def classify_single_model_to_bin(
     :type image_features: NdArray.
     """
     try :
-      image_class_prob     = classify_image_prob(image_features,model ,torch_model=torch_model) # get the probability list
+
+      # Take the classifier from model
+      classifier = model['classifier']
+
+      image_class_prob     = classify_image_prob(image_features, classifier,torch_model=torch_model) # get the probability list
       model_type, tag_name = get_model_tag_name(model_name) 
       tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
 
@@ -469,8 +476,10 @@ def classify_single_model_to_bin(
 
       return  { 'model_name' : model_name,
                 'model_type' : model_type,
-                'tag_name'   : tag_name,
-                'tag_prob'   : image_class_prob[0]}
+                'model_train_date' : model['train_start_time'].strftime('%Y-%m-%d, %H:%M:%S'),
+                'tag'   : tag_name,
+                'tag_score'   : image_class_prob
+              }
 
     except Exception as e  :
         print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_name}")
@@ -507,7 +516,9 @@ def classify_to_bin(
   :type device: str
   """
   try:    
+
     blake2b_hash = file_to_hash(image_file_path)
+    
     try : 
         image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
     except KeyError:
@@ -517,16 +528,18 @@ def classify_to_bin(
 
     # loop through each model and find the classification of the image.
     for model_name in models_dict:
-
-      # Take the classifier from models_dict[model_name]
-      classifier = models_dict[model_name]['classifier']
+      model = models_dict[model_name]
+      torch_model = 'torch' in model_name
+      # model is a dict with the following structure
+      # {'classifier': <classifier>, 'model_type': <model_type>, 'train_start_time': <train_start_time>, 'tag': <tag_name>}
       model_result_dict = classify_single_model_to_bin(
                                                         image_file_path,
-                                                        classifier,
+                                                        model,
                                                         model_name,
                                                         image_features,
                                                         bins_array,
-                                                        image_tagging_folder
+                                                        image_tagging_folder,
+                                                        torch_model=torch_model
                                                         )
       if model_result_dict is None:
         continue

@@ -291,8 +291,7 @@ def generate_model_file(
                         classifier,
                         model_type,
                         train_start_time, 
-                        tag_name : str, 
-                        model_name :str
+                        tag_name : str
                        ):
     """
     takes model's object and convert it into pickle file.
@@ -309,29 +308,28 @@ def generate_model_file(
     """
 
     # save classifier object into pickle file. 
-    model_file_name = f'model-{model_name}-tag-{tag_name}'
+    model_file_name = f'model-{model_type}-tag-{tag_name}'
     pickle_file_path = os.path.join(models_output_folder , f'{model_file_name}.pkl')
-
     model_dict = {'classifier':classifier, 'model_type': model_type, 'train_start_time': train_start_time, 'tag': tag_name}
+    print (f'[INFO] Creating model file: {model_file_name}')
     joblib.dump(model_dict , pickle_file_path)
-    joblib.dump(classifier , pickle_file_path)
     return 
 
 
 # Logistic Regression Pytorch class.
-class LogisticRegressionPytorch(torch.nn.Module):
-     def __init__(self, input_dim, output_dim):
-         super(LogisticRegressionPytorch, self).__init__()
-         self.linear = torch.nn.Linear(input_dim, output_dim)
-     def forward(self, x):
-         return torch.sigmoid(self.linear(x))
+# class LogisticRegressionPytorch(torch.nn.Module):
+#      def __init__(self, input_dim, output_dim):
+#          #super(LogisticRegressionPytorch, self).__init__()
+#          self.linear = torch.nn.Linear(input_dim, output_dim)
+#      def forward(self, x):
+#          return torch.sigmoid(self.linear(x))
 
 def train_loop(
-                model: LogisticRegressionPytorch,
+                model,
                 train_emb,
                 train_labels,
                 epochs: int = 20000, 
-                ) -> LogisticRegressionPytorch:
+                ):
     """Taining loop for LogisticRegressionPytorch object.
     
     :param model: LogisticRegressionPytorch model object

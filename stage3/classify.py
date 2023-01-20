@@ -64,16 +64,16 @@ def main(
         image_tagging_folder = output_dir
     print(f"[INFO] Output folder {image_tagging_folder}")
     
-    # Load the .json file.
+    # Load the json file.
     metadata_json_obj = load_json(json_file_path)
     
     if metadata_json_obj is None:
-        print("[WARNING] No .json file loaded, calculating embeddings for every image.")
+        print("[WARNING] No json file loaded, calculating embeddings for every image.")
 
     # Get CLIP model, to calculate CLIP embeddings if it's not in .json metadata file.
     clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
     dir_path    = os.path.dirname(os.path.realpath(__file__))
-    model_path  = os.path.join('output','models') if model_path is None else model_path
+    model_path  = './output/models' if model_path is None else model_path
     models_dict = create_models_dict(model_path)
     bins_array  = get_bins_array(bins_number) 
 
@@ -108,7 +108,7 @@ def main(
     db_out_dir = './output'
     #make sure result output path exists 
     os.makedirs(db_out_dir, exist_ok = True)
-    DATABASE_NAME = '/stage3.sqlite'
+    DATABASE_NAME = '/score_cache.sqlite'
     DATABASE_PATH = f'{db_out_dir}/{DATABASE_NAME}'
 
     def __delete_all_data_in_database():
@@ -116,15 +116,16 @@ def main(
         __create_database()
 
     def __create_database():
-        cmd1 = '''CREATE TABLE stage3 (
+        cmd1 = '''CREATE TABLE score_cache (
         file_name   TEXT    NOT NULL,
         file_path   TEXT    NOT NULL,
-        type        TEXT    ,
-        hash_id     TEXT    ,
-        model_name  TEXT    ,
-        model_type  TEXT    ,
-        tag_name    TEXT    ,
-        tag_prob    REAL    
+        type        TEXT,
+        hash_id     TEXT,
+        model_name  TEXT,
+        model_type  TEXT,
+        model_train_date  TEXT,    
+        tag    TEXT,
+        tag_score    REAL    
         );
         '''
         db = sqlite3.connect(DATABASE_PATH)
@@ -142,9 +143,9 @@ def main(
             time.sleep(1)
             __delete_database()
 
-    def __insert_data_into_database(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    def __insert_data_into_database(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
         try:
-            cmd = "insert into stage3(file_name, file_path, type, hash_id, model_name, model_type, tag_name, tag_prob) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"', '"+arg7+"', '"+arg8+"')"
+            cmd = "insert into score_cache(file_name, file_path, type, hash_id, model_name, model_type, model_train_date, tag, tag_score) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"', '"+arg7+"', '"+arg8+"', '"+arg9+"')"
             with sqlite3.connect(DATABASE_PATH) as conn:
                 conn.execute(cmd)
                 conn.commit()
@@ -160,15 +161,15 @@ def main(
     json_keys = list(out_json.keys())
     for key in json_keys:
         file_name = os.path.split(out_json[key]['file_path'])[-1]
-        #file_path = os.path.split(out_json[key]['file_path'])[0]
         file_path = out_json[key]['file_path']
         hash_id = out_json[key]['hash_id']
         model_outs = out_json[key]['classifiers_output']
         for out in model_outs:
             model_name = out['model_name']
             model_type = out['model_type']
-            tag_name = out ['tag_name']
-            tag_prob = out ['tag_prob']
+            model_train_date = out['model_train_date']
+            tag = out['tag']
+            tag_score = out['tag_score']
             __insert_data_into_database(
                 file_name,
                 file_path,
@@ -176,8 +177,9 @@ def main(
                 hash_id,
                 model_name,
                 model_type,
-                tag_name,
-                str(tag_prob)
+                model_train_date,
+                tag,
+                str(tag_score)
                 )
 
     print("[INFO] Finished.")
