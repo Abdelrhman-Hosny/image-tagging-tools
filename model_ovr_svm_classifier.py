@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, './')
 from stage3.classify_helper_functions import *
 from stage2.train_helper_functions import *
 import os 

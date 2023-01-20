@@ -72,11 +72,10 @@ python ./stage2/train.py --metadata_json  './output/input-metadata.json' --tag_t
 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
-## CLI Parameters
+## CLI Arguments
 
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file. 
 * `tag_to_hash_json` _[string]_ - _[required]_ - The path to tag-to-hash json file. 
-
 * `output` _[string]_ - _[optional]_ - The path to the output directory.
 * `test_per` _[float]_ - _[optional]_ - The percentage of the test images from the dataset, default = 0.1 
 

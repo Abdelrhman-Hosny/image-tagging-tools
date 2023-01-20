@@ -1,10 +1,14 @@
+import sys
+sys.path.insert(0, './')
 import argparse
-from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
 import warnings
 import numpy as np
-from train_helper_functions import *
 from datetime import datetime
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from model_pytorch_logistic_regression_classifier import LogisticRegressionPytorch
+from train_helper_functions import *
+
 
 warnings.filterwarnings('ignore')
 
@@ -56,8 +60,8 @@ def main(
 
         # get train test embeddings and labels.
         train_emb, train_labels, test_emb, test_labels , t_n , o_n = get_train_test(tag_all_emb_list, other_all_emb_list , test_per)
-        # ovr-logistic-regression , ovr-svm ,  
-        for model_type in ['ovr-logistic-regression' , 'ovr-svm' , 'torch-logistic-regression' ]:
+        # ovr-logistic-regression , ovr-svm , torch-logistic-regression 
+        for model_type in ['ovr-logistic-regression' , 'ovr-svm', 'torch-logistic-regression' ]:
             
             # make the classifer object 
             if model_type == 'ovr-logistic-regression':
@@ -92,12 +96,10 @@ def main(
             text_file_lines.extend(calc_confusion_matrix(test_labels ,predictions, tag)) 
             text_file_lines.extend(histogram_lines(in_tag_tagged, 'in-distribution'))  
             text_file_lines.extend(histogram_lines(out_tag_tagged,'out-distribution')) 
-
             # generate report for ovr logistic regression model.
             generate_report(report_out_folder , tag , text_file_lines , model_name=model_type)
             # generate model pickle file.
-
-            generate_model_file(models_out_folder, classifier, model_type, t_start, tag, lr)
+            generate_model_file(models_out_folder, classifier, model_type, t_start, tag)
 
     print("[INFO] Finished.")
 

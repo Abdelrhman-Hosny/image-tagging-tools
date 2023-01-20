@@ -2,33 +2,33 @@ model: ovr-svm
 task: binary-classification
 tag: [pos-environment-architecture]
 
-tag-set-image-count:   19 
-other-set-image-count: 272 
+tag-set-image-count:   4 
+other-set-image-count: 9 
 validation-tag-image-count   : 1  
-validation-other-image-count : 27  
+validation-other-image-count : 1  
 
 false-positive-rate: 0.0000  
 false-negative-rate: 1.0000  
 true-positive-rate : 0.0000  
 true-negative-rate : 1.0000  
 
-false-positive :  0 out of 28  
-false-negative : 1  out of 28 
-true-positive : 0 out of 28  
-true-negative : 27 out of 28  
+false-positive :  0 out of 2  
+false-negative : 1  out of 2 
+true-positive : 0 out of 2  
+true-negative : 1 out of 2  
 
->Accuracy : 96.4286
+>Accuracy : 50.0000
 
 Classification Report : 
 
               precision    recall  f1-score   support
 
            0       0.00      0.00      0.00         1
-           1       0.96      1.00      0.98        27
+           1       0.50      1.00      0.67         1
 
-    accuracy                           0.96        28
-   macro avg       0.48      0.50      0.49        28
-weighted avg       0.93      0.96      0.95        28
+    accuracy                           0.50         2
+   macro avg       0.25      0.50      0.33         2
+weighted avg       0.25      0.50      0.33         2
 
 
 Index 0 is class pos-environment-architecture
@@ -36,15 +36,15 @@ Index 1 is class other
 
 in-distribution 
 ############################################################################### 
-███████████████████████████████████                                      2  0.1 
+███████████████████████████████████████████████████████████████████████  4  0.1 
                                                                          0  0.2 
                                                                          0  0.3 
                                                                          0  0.4 
-███████████████████████████████████████████████████████████████████████  4  0.5 
-█████████████████                                                        1  0.6 
-███████████████████████████████████                                      2  0.7 
-█████████████████████████████████████████████████████                    3  0.8 
-███████████████████████████████████████████████████████████████████████  4  0.9 
+                                                                         0  0.5 
+                                                                         0  0.6 
+                                                                         0  0.7 
+                                                                         0  0.8 
+                                                                         0  0.9 
                                                                          0  1.0 
 
 
@@ -52,13 +52,13 @@ out-distribution
 ############################################################################### 
                                                                          0  0.1 
                                                                          0  0.2 
-                                                                         0  0.3 
-                                                                         1  0.4 
-                                                                         0  0.5 
+███████████████████████                                                  1  0.3 
+███████████████████████████████████████████████                          2  0.4 
+███████████████████████████████████████████████                          2  0.5 
                                                                          0  0.6 
-█                                                                        4  0.7 
-███                                                                      9  0.8 
-█████████████████████████████████████████████████████████████████████  204  0.9 
+███████████████████████████████████████████████████████████████████████  3  0.7 
+███████████████████████                                                  1  0.8 
+                                                                         0  0.9 
                                                                          0  1.0 
 
 
