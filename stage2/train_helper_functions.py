@@ -46,17 +46,17 @@ def load_json(json_file_path:str):
         :returns: dictionary of the json file.
         :rtype: dict
     """
-    try :
-
+    if json_file_path != None:
+      try :
         with open(json_file_path, 'rb') as json_obj:
-            json_dict = json.load(json_obj)
-        json_obj.close()
-
-    except Exception as e : # handles any exception of the json file
-        print("[ERROR] Probem with the json file")
+          json_dict = json.load(json_obj)
+        return json_dict
+      
+      except Exception as e : # handles any exception of the json file
+        print(f"[ERROR] Problem loading {json_file_path} the json file")
         return None
-    
-    return json_dict
+    else:
+      return None
 
 
 def get_train_test(
