@@ -97,17 +97,14 @@ def load_json(json_file_path:str):
         :rtype: dict
     """
     try :
-
-        with open(json_file_path, 'rb') as json_obj:
-            json_dict = json.load(json_obj)
-        json_obj.close()
-
-    except Exception as e : # handles any exception of the json file
-        print("[ERROR] Probem with the json file")
-        return None
+      with open(json_file_path, 'rb') as json_obj:
+        json_dict = json.load(json_obj)
+      return json_dict
     
-    return json_dict
-
+    except Exception as e : # handles any exception of the json file
+      print(f"[ERROR] Problem loading {json_file_path} the json file")
+      return None
+    
 def create_out_folder(base_dir = './'):
     """creates output directory for the image classification task.
     
@@ -116,7 +113,7 @@ def create_out_folder(base_dir = './'):
     """
     timestamp = datetime.datetime.now() 
     # RV: Adding base directory
-    image_tagging_folder_name = os.path.join(base_dir, f'tagging_output_from_zip-{timestamp.month}_{timestamp.day}_{timestamp.hour}_{timestamp.minute}')
+    image_tagging_folder_name = os.path.join(base_dir, f'tagging_output_from_zip-{timestamp.year}_{timestamp.month}_{timestamp.day}_{timestamp.hour}_{timestamp.minute}')
     return make_dir(image_tagging_folder_name)
 
 def compute_blake2b(image: Image.Image): 

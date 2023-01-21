@@ -4,7 +4,7 @@
 ## Tool Description
 
 Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder, the script start to loop over every image and make the classification for it using every binary classification model. This stage does not process .zip (archived) file. 
-In addition, the SQLite database named `stage3.db` (containing file name, file path, hash, model type, tag name and tag score for given images) will be created in the `output` folder in the root directory. 
+In addition, the SQLite database named `score_cache.sqlite` (containing file name, file path, hash, model type, tag name and tag score for given images) will be created in the `output` folder in the root directory. 
 
 ## Installation
 All that's needed to start using classify.py is to install the dependencies using the command
@@ -24,11 +24,8 @@ pip install -r src/to/dir/requirements.txt
 ## Example Usage
 
 ```
-python src/to/dir/classify.py --metadata_json  '/src/to/dir/input-metadata.json' --directory  /src/to/dir/images_directory 
+python ./stage3/classify.py --metadata_json  './output/input-metadata.json' --directory /src/to/dir/images_directory 
 ```
-
-
-
 
 > Note that if the `output` is not created the script automatically creates it for you. 
 

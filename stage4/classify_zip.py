@@ -2,7 +2,6 @@ import argparse
 import os
 import sqlite3
 import time
-import numpy as np
 from zipfile import ZipFile
 from PIL import Image
 from classify_zip_helper_functions import *
@@ -73,7 +72,7 @@ def main(
         model_path: str, 
         ):
 
-    zips = []
+    zip_files = []
     global zips_info
 
     """main function to be running, calls other function.
@@ -106,14 +105,14 @@ def main(
     # Selecting zip files only
     for file in img_files_list:
         if file.lower().endswith(('.zip')):
-            zips.append(file)
+            zip_files.append(file)
     
     # Get the output folder path.
     if output_dir is None : 
         # Create base directory for ./output. Create the output directory name with time-stamp.
         image_tagging_folder = create_out_folder(base_dir = './output')
     else :
-        image_tagging_folder = output_dir
+        image_tagging_folder =  create_out_folder(base_dir = output_dir)
     print(f"[INFO] Output folder {image_tagging_folder}")
     
     # Load the .json file.
@@ -131,7 +130,7 @@ def main(
     out_json = {} # a dictionary for classification scores for every model.
         
     # Loop through each zip file.
-    for file in tqdm(zips):
+    for file in tqdm(zip_files):
         # Generating images
         for img, img_file_name in tqdm(zip_gen(file)):
             # Classify
@@ -165,7 +164,7 @@ def main(
     db_out_dir = './output'
     #make sure result output path exists 
     os.makedirs(db_out_dir, exist_ok = True)
-    DATABASE_NAME = '/stage4.db'
+    DATABASE_NAME = '/zip_score_cache.sqlite'
     DATABASE_PATH = f'{db_out_dir}/{DATABASE_NAME}'
     
     print (DATABASE_PATH)
@@ -174,18 +173,21 @@ def main(
         __create_database()
 
     def __create_database():
-        cmd1 = '''CREATE TABLE stage4 (
+        cmd1 = '''CREATE TABLE zip_score_cache (
         file_name   TEXT    NOT NULL,
         file_path   TEXT            ,
         archive_path    TEXT        ,
         type            TEXT        ,
         n_img_content   INTEGER     ,
         hash_id     TEXT            ,
+        model_name  TEXT            ,
         model_type  TEXT            ,
-        tag_name    TEXT            ,
-        tag_prob    REAL    
+        model_train_date  TEXT      ,
+        tag    TEXT                 ,
+        tag_score    REAL    
         );
         '''
+
         db = sqlite3.connect(DATABASE_PATH)
         c = db.cursor()
         c.execute('PRAGMA encoding="UTF-8";')
@@ -201,9 +203,9 @@ def main(
             time.sleep(1)
             __delete_database()
 
-    def __insert_file_into_database(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    def __insert_file_into_database(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
         try:
-            cmd = "insert into stage4(file_name, file_path, type, hash_id, model_type, tag_name, tag_prob) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"', '"+arg7+"')"
+            cmd = "insert into zip_score_cache(file_name, file_path, type, hash_id, model_name, model_type, model_train_date, tag, tag_score) values ('"+arg1+"', '"+arg2+"', '"+arg3+"', '"+arg4+"', '"+arg5+"', '"+arg6+"', '"+arg7+"', '"+arg8+"', '"+arg9+"')"
             with sqlite3.connect(DATABASE_PATH) as conn:
                 conn.execute(cmd)
                 conn.commit()
@@ -251,17 +253,21 @@ def main(
         hash_id = out_json[key]['hash_id']
         model_outs = out_json[key]['classifiers_output']
         for out in model_outs:
+            model_name = out['model_name']
             model_type = out['model_type']
-            tag_name = out ['tag_name']
-            tag_prob = out ['tag_prob']
+            model_train_date = out['model_train_date']
+            tag = out ['tag']
+            tag_score = out['tag_score']
             __insert_file_into_database(
                 file_name,
                 file_path,
                 os.path.splitext(file_name)[-1],
                 hash_id,
+                model_name,
                 model_type,
-                tag_name,
-                str(tag_prob)
+                model_train_date,
+                tag,
+                str(tag_score)
                 )
 
     print("[INFO] Finished.")

@@ -39,14 +39,10 @@ python ./stage1/ImageDatasetProcessor.py --input_folder=./dataset --tagged_datas
 * `input_folder` _[string]_ - _[required]_ - path to the directory containing sub-folders of each tag.
 * `output_folder` _[string]_ - _[optional]_ - path to the directory where to save the files into it.
 * `tagged_dataset` _[bool]_ - _[optional]_ - the dataset to process is a tagged dataset such that each each parent folder name is the tag of the images contained within it, default is `True`
-
 * `clip_model` _[str]_ - _[optional]_ CLIP model to be used, default is `'ViT-B-32'`
-
 * `pretrained` _[str]_ - _[optional]_ -  the pre-trained model to be used for CLIP, default is `'openai'`
-
 * `batch_size` _[int]_ - _[optional]_ -  number of images to process at a time, default is `32`. 
 * `num_threads` _[int]_ - _[optional]_ - the number to be used in this process, default is `4`
-
 * `device` _[str]_ - _[optional]_ -  the device to be used in computing the CLIP embeddings, if `None` is provided then `cuda` will be used if available, default is `None`
 
 
@@ -62,14 +58,10 @@ Given a `metadata` json file containing embeddings for images and `tag-to-image-
 ## Example Usage
 
 ```
-python ./stage2/train.py --metadata_json  './output/input-metadata.json' --tag_to_hash_json './output/input-tag-to-image-hash-list.json'
+python ./stage2/train.py --metadata_json=./output/input-metadata.json --tag_to_hash_json=./output/input-tag-to-image-hash-list.json
 ```
 
-> Note that if the `output` is not created the script automatically creates it for you. 
-
-
-> Note that if the `test_per` is not created the script will make test set ~= 10% of the dataset.
-
+> If the `output` folder is not present, the script automatically creates it for you. 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
 ## CLI Arguments
@@ -77,48 +69,39 @@ Also you may call `--help` to see the options and their defaults in the cli.
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file. 
 * `tag_to_hash_json` _[string]_ - _[required]_ - The path to tag-to-hash json file. 
 * `output` _[string]_ - _[optional]_ - The path to the output directory.
-* `test_per` _[float]_ - _[optional]_ - The percentage of the test images from the dataset, default = 0.1 
-
+* `test_per` _[float]_ - _[optional]_ - The percentage of the test images from the dataset, default = 0.1. If the `test_per` is not created the script will make test set ~= 10% of the dataset.
 
 # Stage 3: Classify Data
 
 > A script for classification models inference given images' `directory` and `metadata_json` .json file. This stage does not process .zip (archived) file.
 
-
-
 ## Tool Description
 
-Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder, the script start to loop over every image and make the classification for it using every binary classification model. In addition, the SQLite database named `stage3.db` (containing file name, file path, hash, model type, tag name and tag score for given images) will be created in the `output` folder in the root directory. 
+Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder, the script start to loop over every image and make the classification for it using every binary classification model. If the `--output` argument is not specified, the classification / inference result will be placed at `./output/tagging_output` folder. Time stamp will be appended to folder name (for example: `./output/tagging_output_2023_1_21_0_56`).
+In addition, the SQLite database named `score_cache.sqlite` with table named `score_cache` containing file name, file path, file hash, model name, model type, model train date, tag string and tag score for given images will be created in the `./output` folder. 
+
 
 ## Example Usage
 
 ```
-python ./stage3/classify.py --metadata_json './output/input-metadata.json' --directory ‘./output/images_directory’
+python ./stage3/classify.py --metadata_json=./output/input-metadata.json --directory=/path/to/images/dir
 ```
+Or
 
 ```
-python ./stage3/classify.py --metadata_json './input-metadata.json' \
-                            --directory ‘/src/to/dir/images_directory’
-                            --output ‘./classification_output’
-                            --output_bins 10
-                            --model ‘./output/models’
+python ./stage3/classify.py --metadata_json=./output/input-metadata.json --directory=./path/to/images/dir --output=./output --output_bins=10 --model=./output/models
 
 ```
 
-
-
-> Note that if the `output` is not created the script automatically creates it for you. 
-
-> Note that if the `model` is not created the script automatically uses models in [outputs/models](outputs/models/)
-
+> Note that if the `output` folder is not present, the script automatically creates it for you. 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
 ## CLI Parameters
 
-* `directory` _[string]_ - _[required]_ - The path to the images folder or images .zip file. 
+* `directory` _[string]_ - _[required]_ - The path to the test images folder. 
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file for CLIP embeddings. 
 * `output` _[string]_ - _[optional]_ - The path to the output directory for the inference results. 
-* `model` _[string]_ - _[optional]_ - The path to the models' .pkl files directory or single .pkl file model.
+* `model` _[string]_ - _[optional]_ - The path to the models' .pkl files directory or single .pkl file model. If this is not specified, the script automatically use models in `./output/models` directory.
 * `output_bins` _[int]_ - _[optional]_ -  The number of bins of the results for each model.
 
 
@@ -128,29 +111,21 @@ Also you may call `--help` to see the options and their defaults in the cli.
 
 ## Tool Description
 
-Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder, the script start to loop over every image and make the classification for it using every binary classification model. In addition, the SQLite database named `stage4.db` (containing file name, file path, archive path, type of file, hash, model type, tag name and tag score for given images) will be created in the `output` folder in the root directory. 
+Given a `metadata_json` json file containing embeddings for images and `directory` of images' folder, the script start to loop over every image and make the classification for it using every binary classification model. If the `--output` argument is not specified, the classification / inference result will be placed at `./output/tagging_output` folder. Time stamp will be appended to folder name (for example: `./output/tagging_output_2023_1_21_0_56`).
+
+In addition, the SQLite database named `zip_score_cache.sqlite` with table named `zip_score_cache` containing file name, file path, archive path, type of file, hash, model type, tag name and tag score for given images will be created in the `output` folder. 
 
 ## Example Usage
 
 ```
-python ./stage4/classify_zip.py --metadata_json './output/input-metadata.json' --directory ‘./output/images_directory.zip’
+python ./stage4/classify_zip.py --metadata_json=./output/input-metadata.json --directory=/path/to/images/dir
+```
+Or
+```
+python ./stage4/classify_zip.py --metadata_json=./output/input-metadata.json --directory=./src/to/images/dir --output=./output --output_bins=10 --model=./output/models
 ```
 
-```
-python ./stage4/classify_zip.py --metadata_json './input-metadata.json' \
-                            --directory ‘/src/to/dir/images_directory.zip’
-                            --output ‘./classification_output’
-                            --output_bins 10
-                            --model ‘./output/models’
-
-```
-
-
-
-> Note that if the `output` is not created the script automatically creates it for you. 
-
-> Note that if the `model` is not created the script automatically uses models in [outputs/models](outputs/models/)
-
+> Note that if the `output` folder is not present, the script automatically creates it for you. 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
 ## CLI Parameters
@@ -158,7 +133,7 @@ Also you may call `--help` to see the options and their defaults in the cli.
 * `directory` _[string]_ - _[required]_ - The path to the images folder or images .zip file. 
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file for CLIP embeddings. 
 * `output` _[string]_ - _[optional]_ - The path to the output directory for the inference results. 
-* `model` _[string]_ - _[optional]_ - The path to the models' .pkl files directory or single .pkl file model.
+* `model` _[string]_ - _[optional]_ - The path to the models' .pkl files directory or single .pkl file model. If this is not specified, the script automatically use models in `./output/models` directory.
 * `output_bins` _[int]_ - _[optional]_ -  The number of bins of the results for each model.
 
 

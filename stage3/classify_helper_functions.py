@@ -110,17 +110,17 @@ def load_json(json_file_path:str):
         :returns: dictionary of the json file.
         :rtype: dict
     """
-    try :
-
+    if json_file_path != None:
+      try :
         with open(json_file_path, 'rb') as json_obj:
-            json_dict = json.load(json_obj)
-        json_obj.close()
-
-    except Exception as e : # handles any exception of the json file
-        print("[ERROR] Probem with the json file")
+          json_dict = json.load(json_obj)
+        return json_dict
+      
+      except Exception as e : # handles any exception of the json file
+        print(f"[ERROR] Problem loading {json_file_path} the json file")
         return None
-    
-    return json_dict
+    else:
+      return None
 
 def create_out_folder(base_dir = './'):
     """creates output directory for the image classification task.
@@ -130,7 +130,7 @@ def create_out_folder(base_dir = './'):
     """
     timestamp = datetime.datetime.now() 
     # RV: Adding base directory
-    image_tagging_folder_name = os.path.join(base_dir, f'tagging_output_{timestamp.month}_{timestamp.day}_{timestamp.hour}_{timestamp.minute}')
+    image_tagging_folder_name = (f'{base_dir}/tagging_output_{timestamp.year}_{timestamp.month}_{timestamp.day}_{timestamp.hour}_{timestamp.minute}')
     return make_dir(image_tagging_folder_name)
 
 def compute_blake2b(image: Image.Image): 
@@ -519,10 +519,10 @@ def classify_to_bin(
 
     blake2b_hash = file_to_hash(image_file_path)
     
-    try : 
-        image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
-    except KeyError:
-        image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
+    try: 
+      image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
+    except:
+      image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
 
     classes_list = [] # a list of dict for every class 
 

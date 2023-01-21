@@ -6,7 +6,7 @@ import numpy as np
 from datetime import datetime
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
-from model_pytorch_logistic_regression_classifier import LogisticRegressionPytorch
+from logistic_regression_pytorch import LogisticRegressionPytorch
 from train_helper_functions import *
 
 
