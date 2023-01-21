@@ -61,7 +61,7 @@ def main(
         # Create base directory for ./output. Create the output directory name with time-stamp.
         image_tagging_folder = create_out_folder(base_dir = './output')
     else :
-        image_tagging_folder = output_dir
+        image_tagging_folder =  create_out_folder(base_dir = output_dir)
     print(f"[INFO] Output folder {image_tagging_folder}")
     
     # Load the json file.
