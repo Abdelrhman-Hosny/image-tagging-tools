@@ -82,7 +82,7 @@ class ClipCache(object):
                 cur = conn.cursor()
                 cur.execute(cmd)
                 for row in cur:
-                    return {'hash_id':row[0]}
+                    return row[0]
         except Exception as e:
            print (f'[ERROR] {e}: Getting random hash from cache failed, clip cache database does not exist or might be in use!')
 

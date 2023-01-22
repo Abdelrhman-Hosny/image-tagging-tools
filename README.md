@@ -146,7 +146,7 @@ The file cache module defined in `cache_file.py` contains the class definition w
 * _class_  `cache_file`.__`FileCache`__ - A class to construct file cache object.
 * __`create_file_cache`__(_`out_dir = './output'`_, _`db_name = 'file_cache.sqlite'`_) - Method to create file cache database with default name `file_cache.sqlite` and default location in project `./output` directory. The file cache database will not be created if the database with same name path already exist.
 * __`add_folder_to_file_cache`__(_`data_dir`_, _`out_dir = './output'`_, _`db_name = 'file_cache.sqlite'`_) - Method to add image files contained in a folder / directory specified in `data_dir` to file cache database specified in `db_name` at location `out_dir` directory.
-* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from file cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
+* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from file cache database specified in `db_path`. This method returns random file hash in `str` format.
 * __`get_img_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image file data from file cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash, `file_name` - image file name, `path` - image file path, `type` - image file type, `is_archive` - will be `True` if the file is ZIP archive, `n_content` - for ZIP archive, indicate the number of contained image file,  `container_archive` - the name of containing ZIP archive if the image file is contained in ZIP archive.
 * __`get_random_image`__(_`db_path`_) - Method to fetch image file data from file cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_img_by_hash()` method above.
 * __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in file cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the file cache SQLite database file will be removed.
@@ -167,8 +167,7 @@ fileCache.create_file_cache()
 fileCache.add_folder_to_file_cache('./dataset/testdata1.zip')
 
 # Get random file hash_id
-hash_dict = fileCache.get_random_hash('./output/file_cache.sqlite')
-hash_id = hash_dict['hash_id']
+hash_id = fileCache.get_random_hash('./output/file_cache.sqlite')
 
 # Fetch image file data from file cache database with specific hash
 img_dict = fileCache.get_img_by_hash('./output/file_cache.sqlite', hash_id)
@@ -199,7 +198,7 @@ The CLIP cache module defined in `cache_clip.py` contains the class definition w
 * _class_  `cache_clip`.__`ClipCache`__ - A class to construct CLIP cache object.
 * __`create_clip_cache`__(_`out_dir = './output'`_, _`db_name = 'clip_cache.sqlite'`_) - Method to create CLIP cache database with default name `clip_cache.sqlite` and default location in project `./output` directory. The CLIP cache database will not be created if the database with same name path already exist.
 * __`add_folder_to_clip_cache`__(_`data_dir`_, _`out_dir = './output'`_, _`db_name = 'clip_cache.sqlite'`_) - Method to add image files contained in a folder / directory specified in `data_dir` to CLIP cache database specified in `db_name` at location `out_dir` directory.
-* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from CLIP cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
+* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from CLIP cache database specified in `db_path`. This method returns random file hash in `str` format.
 * __`get_clip_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image CLIP vector from CLIP cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash in `str` format, `clip_vector` - image CLIP vector in numpy array format, `model` - model type that is used to generate image CLIP vector in `str` format.
 * __`get_random_clip`__(_`db_path`_) - Method to fetch image CLIP vector from CLIP cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_clip_by_hash()` method above.
 * __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in CLIP cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the CLIP cache SQLite database file will be removed.
@@ -220,8 +219,7 @@ clipCache.create_clip_cache()
 clipCache.add_folder_to_clip_cache('./dataset/testdata1.zip')
 
 # Get random file hash_id
-hash_dict = clipCache.get_random_hash('./output/clip_cache.sqlite')
-hash_id = hash_dict['hash_id']
+hash_id = clipCache.get_random_hash('./output/clip_cache.sqlite')
 
 # Fetch CLIP vector data from CLIP cache database with specific hash
 clip_dict = clipCache.get_clip_by_hash('./output/clip_cache.sqlite', hash_id)
@@ -293,104 +291,62 @@ tagCache.clear_cache('./output/tag_cache.sqlite', delete_cache=False)
 
 ```
 
-# Cache Web API Module
+# File Cache Web API Module
 > A web API for getting random image file and show its relevant data as follows: file name, file path, image size, container archive, hash ID, request time and the image itself.
 
 ## Module Description
-The web API module runs FLASK-based server and contains functions to fetch random file from file cache database and returns its respective data (file name, file path, image size, container archive, hash ID, request time and the image itself) based on HTTP request made from web browser.
+The web API module defined in `file_cache_web_api.py` runs FLASK-based server and contains functions to fetch random file from file cache database and returns its respective data (file name, file path, image size, container archive, hash ID, request time and the image itself) based on HTTP request made from web browser.
 
 ## Usage Example
 
 Start the web API module form CLI. In default, the server runs on host `0.0.0.0` and port `8080`.
 ```
-python cache_web_api.py
+python file_cache_web_api.py
 ```
 or start the web API in other host and port using `host` and `port` CLI arguments as the follows.
 ```
-python cache_web_api.py --host=0.0.0.0 --port=8000
+python file_cache_web_api.py --host=0.0.0.0 --port=8000
 ```
 
-Fetch random image from file cache database specified in `db_path`. The following URL request (made from web browser) will return HTML page containing file name, file path, image size, container archive, hash ID, request time and the image itself. Specify the `db_path` as argument with query string using '?' and its value after `=`.
+Fetch random image from file cache database (created using File Cache Module in `file_cache.py`) specified in `db_path`. The following URL request (made from web browser) will return HTML page containing file name, file path, image size, container archive, hash ID, request time and the image itself. Specify the `db_path` as argument with query string using '?' and its value after `=`.
 
 ```
 http://127.0.0.1:8080/get_random_img?db_path=./output/file_cache.sqlite
 ```
 
+# Model API
+> An API to list, access and use existing classifier models. Model API contain function that access existing classifier model pickle files (in given path) and returns existing classifier model as Python dictionary.
+
+## Module Description
+The model API defined in `api_model.py` contains the class definition with the following functions:
+
+* _class_  `api_model`.__`ModelApi`__ - A class to construct the model loader object.
+* __`get_models_dict`__(_`models_path`_) - Method that returns models dictionary for model pickle file in given `models_path`.
+
+## Usage Example
+```python
+
+from api_model import ModelApi
+
+# Create model loader object
+model_api = ModelApi()
+
+# Get models dictionary to models_dict for model pickle files in given models_path.
+models_dict = model_api.get_models_dict(models_path='./output/models')
+'''
+Example stucture of models_dict
+{<model_name>: 
+    {'classifier' : <model object>,
+    'model_type' : <model type string>,
+    'train_start_time' : <training start time datetime object>
+    'tag' : <tag string>
+    }
+}
+'''
+
+```
+
 # Examples
-
-## Listing all the models.
-```python 
-list_models('./output/models') # listing all the models we have for classification. 
-```
-
-## Binary classification of a single image using a single model.
-
-```python
-folder_path    = "./images/example1.png" # Input image.
-output_dir     = "./classification_single_image_single_model" # outut directory for the classification.
-json_file_path = "./input-metadata.json" # metadata .json file path.
-bins_number    = 10 # number of bins.
-model_path     = "./output/models/model-ovr-logistic-regression-tag-not-pixel-art-digital.pkl" # pickle file for the model.
-
-# Run the classification.
-classify_main(
-        folder_path    = folder_path , 
-        output_dir     = output_dir, 
-        json_file_path = json_file_path, 
-        bins_number    = bins_number, 
-        model_path     = model_path, 
-        )
-
-```
-
-
-## Multiple binary classification for a single image.
-
-```python
-folder_path    = "./images/example1.png" # input image.
-output_dir     = "./classification_single_image_all_models" # output directory of the classification.
-json_file_path = "./input-metadata.json" # metadata .json file path.
-bins_number    = 10 # number of bins.
-model_path = "./image-tagging-tools/output/models" # pickle file for the model.
-
-# run the classification.
-classify_main(
-        folder_path    = folder_path , 
-        output_dir     = output_dir, 
-        json_file_path = json_file_path, 
-        bins_number    = bins_number, 
-        model_path     = model_path, 
-        )
-```
-
-## Custom binary classification.
-
-```python
-
-TAG_NAME   = 'not-pixel-art' # tag which you want to classify.
-MODEL_TYPE = 'ovr-logistic-regression' # model type you want to use.
-
-folder_path    = "./images/example1.png" # input image.
-output_dir     = "./classification_single_image_custom_model" # output directory for the classification.
-json_file_path = "./input-metadata.json" # .json fil for metadata.
-bins_number    = 10 # bins number 
-
-# generating the path of the model's .pkl file using model type and tag name. 
-model_path = generate_model_path(
-                                  './output/models',
-                                  model_type= MODEL_TYPE,
-                                  tag_name= TAG_NAME
-                                 )
-                                 
-classify_main(
-        folder_path    = folder_path, 
-        output_dir     = output_dir, 
-        json_file_path = json_file_path, 
-        bins_number    = bins_number, 
-        model_path     = model_path, 
-        )                                 
-
-```
 
 ## Get List of File Hash_ID from Tag Cache Based on List of Models or Specific Model
 
@@ -415,7 +371,7 @@ try:
     model_api=ModelApi()
 
     # Getting models
-    ret, models_dict = model_api.get_models_dict(models_path=models_path)
+    models_dict = model_api.get_models_dict(models_path=models_path)
     '''
     Example stucture of models_dict
     {<model_name>: 
