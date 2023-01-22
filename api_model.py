@@ -40,11 +40,11 @@ class ModelApi(object):
                     with open(model_pkl_path, 'rb') as model:
                         models_dict[model_name] = joblib.load(model)
                         
-            return True, models_dict
+            return models_dict
 
         except Exception as e:
             print (f'[ERROR] {e}: Failed getting models')
-            return False, models_dict
+            return {}
 
 # model_api = ModelApi()
 # models_dict = model_api.get_models_dict('./output/models/')
