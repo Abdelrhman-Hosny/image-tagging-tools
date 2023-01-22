@@ -96,7 +96,7 @@ python ./stage3/classify.py --metadata_json=./output/input-metadata.json --direc
 > Note that if the `output` folder is not present, the script automatically creates it for you. 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
-## CLI Parameters
+## CLI Arguments
 
 * `directory` _[string]_ - _[required]_ - The path to the test images folder. 
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file for CLIP embeddings. 
@@ -128,7 +128,7 @@ python ./stage4/classify_zip.py --metadata_json=./output/input-metadata.json --d
 > Note that if the `output` folder is not present, the script automatically creates it for you. 
 Also you may call `--help` to see the options and their defaults in the cli. 
 
-## CLI Parameters
+## CLI Arguments
 
 * `directory` _[string]_ - _[required]_ - The path to the images folder or images .zip file. 
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file for CLIP embeddings. 
@@ -248,9 +248,11 @@ The tag cache module defined in `cache_tag.py` contains the class definition wit
 * _class_  `cache_tag`.__`TagCache`__ - A class to construct tag cache object.
 * __`create_tag_cache`__(_`out_dir = './output'`_, _`db_name = 'tag_cache.sqlite'`_) - Method to create tag cache database with default name `tag_cache.sqlite` and default location in project `./output` directory. The tag cache database will not be created if the database with same name path already exist.
 * __`add_folder_to_tag_cache`__(_`data_dir`_, _`out_dir = './output'`_, _`db_name = 'tag_cache.sqlite'`_) - Method to add image files contained in a folder / directory specified in `data_dir` to tag cache database specified in `db_name` at location `out_dir` directory.
-* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash from tag cache database specified in `db_path`. This method returns dictionary with a key `hash_id` that has value of retrieved random file hash in `str` format.
-* __`get_tag_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image tag from tag cache database specified in `db_path` with specific hash `hash_id`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash in `str` format, `tag` - image tag in `str` format.
-* __`get_random_tag`__(_`db_path`_) - Method to fetch image tag from tag cache database specified in `db_path`. The return value is a dictionary with the same structure as a return value of `get_tag_by_hash()` method above.
+* __`get_random_hash`__(_`db_path`) - Method to fetch random file hash id from tag cache database specified in `db_path`. This method returns random file hash in `str` format.
+* __`get_tag_by_hash`__(_`db_path`_, _`hash_id`_) - Method to fetch image tag from tag cache database specified in `db_path` with specific hash `hash_id`. This method returns image tag in `str` format.
+* __`get_hash_by_tag`__(_`db_path`_, _`tag`_) - Method to get list of hash ids from tag cache database specified in `db_path` for given tag string `tag`. 
+* __`get_random_tag`__(_`db_path`_) - Method to fetch image tag from tag cache database specified in `db_path`. This method returns a dictionary with the following keys and its values: `hash_id` - image file hash id in `str` format, `tag` - image tag in `str` format.
+The return value is a dictionary with the same structure as a return value of `get_tag_by_hash()`
 * __`clear_cache`__(_`db_path`_, `delete_cache = False`) - Method to clear all data from the table in tag cache database specified in `db_path`. If the `delete_cache` argument is set to `True`, the tag cache SQLite database file will be removed.
 
 ## Usage Example
@@ -269,23 +271,25 @@ tagCache.create_tag_cache()
 tagCache.add_folder_to_tag_cache('./dataset/testdata1.zip')
 
 # Get random file hash_id
-hash_dict = tagCache.get_random_hash('./output/tag_cache.sqlite')
-hash_id = hash_dict['hash_id']
+hash_id = tagCache.get_random_hash('./output/tag_cache.sqlite')
 
-# Fetch tag from tag cache database with specific hash
-tag_dict = tagCache.get_tag_by_hash('./output/tag_cache.sqlite', hash_id)
+# Fetch tag string from tag cache database with specific hash
+tag_str = tagCache.get_tag_by_hash('./output/tag_cache.sqlite', hash_id)
 
-# Fetch random tag from tag cache database.
+# Fetch list of hash ids for specific tag string
+hash_id_list = tagCache.get_hash_by_tag('./output/tag_cache.sqlite', tag_str)
+
+# Fetch random hash_id and tag pair from tag cache database.
 tag_dict = tagCache.get_random_tag('./output/tag_cache.sqlite')
-
-# Getting data
 hash_id = tag_dict['hash_id']
 tag = tag_dict['tag']
 print (f'hash: {hash_id}, tag: {tag}')
+'''Example output
+{'hash_id': '5fed6cf0ff1028f58f6cc73bb09e142eb4aacf1f5a206327fda3ef3db8cfcbf3e643ec1126238115d0fcfbe35be6e3204b21e06d1c3a7f0229e6aa18696ee5da', 'tag': 'other-validation'}
+'''
 
 # Clear all data from the table in tag cache database.
 tagCache.clear_cache('./output/tag_cache.sqlite', delete_cache=False)
-
 
 ```
 
