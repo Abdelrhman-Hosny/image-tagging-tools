@@ -315,7 +315,7 @@ http://127.0.0.1:8080/get_random_img?db_path=./output/file_cache.sqlite
 ```
 
 # Model API
-> An API to list, access and use existing classifier models. Model API contain function that access existing classifier model pickle files (in given path) and returns existing classifier model as Python dictionary.
+> An API to list, access and use existing classifier models. Model API contains function that accesses existing classifier model pickle files (in given path) and returns existing classifier model as Python dictionary.
 
 ## Module Description
 The model API defined in `api_model.py` contains the class definition with the following functions:
@@ -343,8 +343,30 @@ Example stucture of models_dict
     }
 }
 '''
+```
+
+# Model Web API
+> Web API to list existing classifier models (name, type, training start time and tag string) in JSON format. 
+
+## Module Description
+The model web API defined in `webapi_model.py` runs FLASK-based server and contains functions to list existing classifier models (name, type, training start time and tag string) in JSON format based on HTTP request made from web browser.
+
+## Usage Example
+Start the model web API form CLI. In default, the server runs on host `0.0.0.0` and port `8080`.
+```
+python webapi_model.py
+```
+or start the web API in other host and port using `host` and `port` CLI arguments as the follows.
+```
+python webapi_model.py --host=0.0.0.0 --port=8000
+```
+
+List existing classifier models (name, type, training start time and tag string)
 
 ```
+http://127.0.0.1:8080/get_models
+```
+
 
 # Examples
 

@@ -1,7 +1,4 @@
-import os
 import argparse
-import joblib
-from datetime import datetime
 import json
 from flask import Flask, request
 
@@ -13,12 +10,12 @@ from api_model import ModelApi
 # Server
 app = Flask(__name__)
 
-
 @app.route('/get_models')
 def get_models_dict():
     '''Returns models dictionary for model pickle file in given models_path'''
 
-    global models_dict
+    global model_api
+    global models_path
     '''
     Example stucture of models_dict
     {<model_name>: 
@@ -29,22 +26,25 @@ def get_models_dict():
         }
     }
     '''
-
-    # Creating new dict for return in HTTP request
-    models_json = models_dict.copy()
-
     try:
-        for model in models_json:
-            # Create a new dict without classifier object
-            models_json[model].pop('classifier')
-            # Stringify the train_start_time datetime object
-            models_json[model]['train_start_time'] = models_json[model]['train_start_time'].strftime('%Y-%m-%d, %H:%M:%S')
-        
-        print(json.dumps(models_json, indent=2))
-        return (json.dumps(models_json, indent=2))
+        # Getting models dictionary
+        models_dict = model_api.get_models_dict(models_path=models_path)
+        if len(models_dict) > 0:
+            # Creating new dict for return in HTTP request
+            models_json = models_dict.copy()
+            for model in models_json:
+                # Create a new dict without classifier object
+                models_json[model].pop('classifier')
+                # Stringify the train_start_time datetime object
+                models_json[model]['train_start_time'] = models_json[model]['train_start_time'].strftime('%Y-%m-%d, %H:%M:%S')
+            
+            print(json.dumps(models_json, indent=2))
+            return (json.dumps(models_json, indent=2))
+        else:
+            return (f'[INFO]: No model exists...')
 
     except Exception as e:
-        return (f'[ERROR] {e}: Getting image data failed')
+        return (f'[ERROR] {e}: Failed getting available models...')
 
 
 if __name__=='__main__':
@@ -64,13 +64,7 @@ if __name__=='__main__':
     try:
         # Initializing model api object
         model_api=ModelApi()
-        # Getting models dict
-        ret, models_dict = model_api.get_models_dict(models_path=models_path)
-        if ret:
-            # Run the server
-            app.run(host=HOST, port=PORT_NUMBER)
-        else:
-            raise Exception(f'[ERROR]: Failed getting available models...')
+        app.run(host=HOST, port=PORT_NUMBER)
 
     except Exception as e:
         print (e)
