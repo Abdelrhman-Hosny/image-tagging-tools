@@ -81,7 +81,7 @@ class TagCache(object):
                 cur = conn.cursor()
                 cur.execute(cmd)
                 for row in cur:
-                    return {'hash_id':row[0]}
+                    return row[0]
         except Exception as e:
             print (f'[ERROR] {e}: Getting random hash from cache failed, tag cache database does not exist or might be in use!')
 
@@ -92,13 +92,9 @@ class TagCache(object):
                 cur = conn.cursor()
                 cur.execute(cmd)
                 for row in cur:
-                    return {
-                            'hash_id':row[0],
-                            'tag':row[1],
-                            }
+                    return row[1]
         except Exception as e:
             print (f'[ERROR] {e}: Getting tag failed, tag cache database does not exist or might be in use!')
-
 
     def get_hash_by_tag(self, db_path, tag=''):
         # Output a list containing hash_id for given tag
@@ -113,7 +109,6 @@ class TagCache(object):
             return hash_ids
         except Exception as e:
             print (f'[ERROR] {e}: Getting tag failed, tag cache database does not exist or might be in use!')
-
 
     def get_random_tag(self, db_path):
         try:
