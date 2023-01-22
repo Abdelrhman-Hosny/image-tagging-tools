@@ -96,7 +96,7 @@ class FileCache(object):
                 cur = conn.cursor()
                 cur.execute(cmd)
                 for row in cur:
-                    return {'hash_id':row[0]}
+                    return row[0]
         except Exception as e:
             print (f'[ERROR]: {e} Getting random hash from cache failed, file cache database does not exist or might be in use!')
 
@@ -142,8 +142,6 @@ class FileCache(object):
 
     def data_gen(self, data_file):
         '''Image generator for zip file'''
-        
-        global zips_info
 
         if data_file.endswith('.zip'):
             # Selected data_dir is a zip archive
@@ -186,7 +184,7 @@ class FileCache(object):
                                                 print (f' Fetching: {img_file_name}')
                                                 yield (img, img_file_name)
                                             except:
-                                                print (f'[WWARNING] Failed to fetch {os.path.join(data_file, entry.filename, sub_entry.filename)}')
+                                                print (f'[WARNING] Failed to fetch {data_file}/{entry.filename}/{sub_entry.filename}')
                                                 continue
                             else:
                                 # Should be image file. Read it.
@@ -232,6 +230,9 @@ class FileCache(object):
         
         db_path = f'{out_dir}/{db_name}'
 
+        # Clearing previous zip files info container
+        self.zips_info.clear()
+
         if (os.path.exists(db_path)):
             # Placeholder for data file names
             files_list = []
@@ -243,7 +244,8 @@ class FileCache(object):
                 # Walking thru files
                 for root, _, files in os.walk(data_dir):
                     for file in files:
-                        files_list.append(os.path.join(root, file))
+                        #files_list.append(os.path.join(root, file))
+                        files_list.append(f'{root}/{file}')
             else:
                 '''Single file (could be a zip archive or image)'''
                 files_list = [data_dir]
