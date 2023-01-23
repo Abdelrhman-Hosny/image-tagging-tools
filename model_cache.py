@@ -10,7 +10,7 @@ class ModelCache(object):
     def __init__(self) -> None:
         pass
 
-    def get_img_from_score_cache(self, model_name, score_gte=0.0, score_lte=1.0, db_path='./output/stage3.sqlite', db_table_name='stage3'):
+    def get_img_from_score_cache(self, model_name, score_gte=0.0, score_lte=1.0, db_path='./output/score_cache.sqlite', db_table_name='score_cache'):
         '''
         Returns list of file names for specific model_name and score score_gte <= score <= score_lte 
         from classification cache specified in db_path
@@ -19,7 +19,7 @@ class ModelCache(object):
         files_dict={}
 
         try:
-            cmd = f"SELECT * FROM {db_table_name} WHERE (tag_prob BETWEEN {score_gte} AND {score_lte})"+" AND (model_name= '"+model_name+"')"
+            cmd = f"SELECT * FROM {db_table_name} WHERE (tag_score BETWEEN {score_gte} AND {score_lte})"+" AND (model_name= '"+model_name+"')"
             with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute(cmd)
@@ -44,7 +44,7 @@ class ModelCache(object):
             return False, files_dict
     
 
-    def clear_score_cache_by_model_date(self, models_path='./output/models/', score_cache_path='./output/stage3.sqlite', score_cache_table_name='stage3'):
+    def clear_score_cache_by_model_date(self, models_path='./output/models/', score_cache_path='./output/score_cache.sqlite', score_cache_table_name='score_cache'):
         '''
         Clearing score cache from entry with model training date older than current model training date.
         '''
@@ -56,9 +56,9 @@ class ModelCache(object):
         try:
             # Getting models dict from model pickle files in given models_path
             model_api = ModelApi()
-            ret, models_dict = model_api.get_models_dict(models_path)
+            models_dict = model_api.get_models_dict(models_path)
             
-            if ret:
+            if len(models_dict) > 0:
 
                  # Count the entries at original condition
                 cmd =   f"SELECT * FROM {score_cache_table_name}"

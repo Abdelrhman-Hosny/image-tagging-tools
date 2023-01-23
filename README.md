@@ -367,6 +367,28 @@ List existing classifier models (name, type, training start time and tag string)
 http://127.0.0.1:8080/get_models
 ```
 
+# Model Cache
+> A tool to list image files for specific model and score range from classification result / score cache resulted in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`)
+
+## Module Description
+The model cache defined in `model_cache.py` contains the class definition with the following functions:
+
+* _class_  `model_cache`.__`ModelCache`__ - A class to construct the model cache object.
+* __`get_img_from_score_cache`__(_`models_name`_, _`score_gte = 0.0`_, _`score_lte = 1.0`_, _`db_path = './output/score_cache.sqlite'`_, _`db_table_name = 'score_cache'`_) - Returns list of file names for specific `model_name` and score between `score_gte` and `score_lte` from classification cache in `db_path` with table name `db_table_name`.
+* __`clear_score_cache_by_model_date`__(_`models_path = './output/models'`_, _`score_cache_path = './output/score_cache.sqlite'`_, _`score_cache_table_name = 'score_cache'`_) - Clearing classification result / score cache in `score_cache_path` from entry with model training date older than the training date of respective current models (in `models_path`).
+
+## Usage Example
+```python
+
+from model_cache import ModelCache
+
+# Create model cache object
+model_cache = ModelCache()
+
+# Get files dictionary 
+files_dict = model_cache.get_img_from_score_cache(model_name='model-ovr-svm-tag-pos-character', score_gte=0.9, score_lte=1.0)
+```
+
 
 # Examples
 
