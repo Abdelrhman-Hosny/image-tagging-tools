@@ -368,7 +368,9 @@ http://127.0.0.1:8080/get_models
 ```
 
 # Model Cache
-> A tool to list image files for specific model and score range from classification result / score cache resulted in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`)
+> A tool for:
+* Get list of image files for specific model and score range from classification result / score cache created in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`)
+* Clearing classification result / score cache created in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`) from entry with model training date older than the training date of respective current models in specified models directory.
 
 ## Module Description
 The model cache defined in `model_cache.py` contains the class definition with the following functions:
@@ -378,6 +380,9 @@ The model cache defined in `model_cache.py` contains the class definition with t
 * __`clear_score_cache_by_model_date`__(_`models_path = './output/models'`_, _`score_cache_path = './output/score_cache.sqlite'`_, _`score_cache_table_name = 'score_cache'`_) - Clearing classification result / score cache in `score_cache_path` from entry with model training date older than the training date of respective current models (in `models_path`).
 
 ## Usage Example
+
+Get list of image files for specific model and score range
+
 ```python
 
 from model_cache import ModelCache
@@ -386,73 +391,25 @@ from model_cache import ModelCache
 model_cache = ModelCache()
 
 # Get files dictionary 
-files_dict = model_cache.get_img_from_score_cache(model_name='model-ovr-svm-tag-pos-character', score_gte=0.9, score_lte=1.0)
+files_dict = model_cache.get_img_from_score_cache(model_name='model-ovr-logistic-regression-tag-pos-character', score_gte=0.9, score_lte=1.0)
+
 ```
 
+Clearing score cache based on model's training date. This example will eliminate entry in score cache `score_cache.sqlite` if the model's training date is older than the training date of respsctive model in `./output/models` directory.
 
-# Examples
-
-## Get List of File Hash_ID from Tag Cache Based on List of Models or Specific Model
 
 ```python
 
-import json
-from cache_tag import TagCache
-from api_model import ModelApi
+from model_cache import ModelCache
 
-# Specify path to tag cache file
-tag_cache_path = './output/tag_cache.sqlite'
-# Specify path to directory containing model pickle files or specific model pickle file
-models_path = './output/models/'
+# Create model cache object
+model_cache = ModelCache()
 
-# Output placeholder
-model_tag_cache_pair = {}
-
-try:
-    # Create tag cache object
-    tag_cache = TagCache()
-    # Create model api object
-    model_api=ModelApi()
-
-    # Getting models
-    models_dict = model_api.get_models_dict(models_path=models_path)
-    '''
-    Example stucture of models_dict
-    {<model_name>: 
-        {'classifier' : <model object>,
-        'model_type' : <model type string>,
-        'train_start_time' : <traing start time datetime object>
-        'tag' : <tag string>
-        }
-    }
-    '''
-
-    # Get tags from models_dict
-    for model in models_dict:
-        # Get list of images (hash_IDs) based on each model's tag name
-        hash_ids = tag_cache.get_hash_by_tag(db_path = tag_cache_path, tag = models_dict[model]['tag'])
-        # Append list of hash IDs to the result dict
-        model_tag_cache_pair[model] = hash_ids
-    
-    # Output
-    print(json.dumps(model_tag_cache_pair, indent=2))
-
-except Exception as e:
-    print (f'[ERROR] {e}: Getting data from tag cache failed')
+# Clearing score cache for entries with outdated model 
+is_success, deleted_entries = model_cache.clear_score_cache_by_model_date()
+# is_success will be True when success or False if there is an error
+# deleted_entries will contain list of deleted entry dictionary.
+# The method will print the original number of entries, number of deleted entriee and current number of entries.
 
 ```
-
-## Get List of File Hash_ID from Tag Cache Based on List of Models or Specific Model (CLI Version)
-
-```
-python get_tag_cache_by_model.py --tag_cache_path=./output/tag_cache.sqlite --models_path=./output/models/
-```
-
-## CLI Arguments
-
-* `tag_cache_path` _[string]_ - _[required]_ - Path to the tag cache file.
-* `models_path` _[string]_ - _[required]_ - Path to directory containing model pickle files or specific model pickle file.
-
-
-
 
