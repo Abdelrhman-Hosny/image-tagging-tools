@@ -137,7 +137,7 @@ Also you may call `--help` to see the options and their defaults in the cli.
 * `output_bins` _[int]_ - _[optional]_ -  The number of bins of the results for each model.
 
 
-# File Cache Module
+# Dataset File Cache Module
 > A tool to create file cache in the form of SQLite database, add data to and fetch from it. File cache contains attributes for each file in given directory or folder. The attributes for each file are represented by the following fields in file cache SQLite database table: `hash_id`, `file_name`, `path`, `type`, `is_archive`, `n_content` and `container_archive`.
 
 ## Module Description
@@ -189,7 +189,7 @@ fileCache.clear_cache('./output/file_cache.sqlite', delete_cache=False)
 
 ```
 
-# CLIP Cache Module
+# Dataset CLIP Cache Module
 > A tool to create, add and fetch CLIP vector data to .sqlite database file. CLIP cache contains CLIP vector data for each image file in given directory or folder. The attributes for each image file are represented by the following fields: `hash_id`, `clip_vector` and `model`.
 
 ## Module Description
@@ -237,7 +237,7 @@ clipCache.clear_cache('./output/clip_cache.sqlite', delete_cache=False)
 
 ```
 
-# Tag Cache Module
+# Dataset Tag Cache Module
 > A tool to create, add and fetch image tag data to .sqlite database file. Tag cache contains tag data for each image file in given directory or folder. The attributes for each image file are represented by the following fields: `hash_id` and `tag`.
 
 ## Module Description
@@ -395,7 +395,7 @@ files_dict = model_cache.get_img_from_score_cache(model_name='model-ovr-logistic
 
 ```
 
-Clearing score cache based on model's training date. This example will eliminate entry in score cache `score_cache.sqlite` if the model's training date is older than the training date of respsctive model in `./output/models` directory.
+Clearing score cache based on model's training date. The following example will eliminate entry in score cache `score_cache.sqlite` if the model's training date is older than the training date of respsctive model in `./output/models` directory.
 
 
 ```python
