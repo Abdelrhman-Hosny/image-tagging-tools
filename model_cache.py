@@ -119,4 +119,4 @@ class ModelCache(object):
                 
         except Exception as e:
             print (f'[ERROR]: {e}')
-            return False
+            return False, deleted_entries
