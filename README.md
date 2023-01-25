@@ -369,8 +369,8 @@ http://127.0.0.1:8080/get_models
 
 # Model Cache
 > A tool for:
-* Get list of image files for specific model and score range from classification result / score cache created in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`)
-* Clearing classification result / score cache created in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`) from entry with model training date older than the training date of respective current models in specified models directory.
+> * Get list of image files for specific model and score range from classification result / score cache created in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`)
+> * Clearing classification result / score cache created in classification Stage 3 and Stage 4 (`score_cache.sqlite` or `zip_score_cache.sqlite`) from entry with model training date older than the training date of respective current models in specified models directory.
 
 ## Module Description
 The model cache defined in `model_cache.py` contains the class definition with the following functions:
@@ -415,7 +415,6 @@ is_success, deleted_entries = model_cache.clear_score_cache_by_model_date()
 
 Get list of image files for specific model and score range (Web API version)
 
-## Usage Example
 Start the model cache web API form CLI. In default, the server runs on host `0.0.0.0` and port `8080`.
 ```
 python webapi_model_cache.py
