@@ -413,3 +413,20 @@ is_success, deleted_entries = model_cache.clear_score_cache_by_model_date()
 
 ```
 
+Get list of image files for specific model and score range (Web API version)
+
+## Usage Example
+Start the model cache web API form CLI. In default, the server runs on host `0.0.0.0` and port `8080`.
+```
+python webapi_model_cache.py
+```
+or start the web API in other host and port using `host` and `port` CLI arguments as the follows.
+```
+python webapi_model_cache.py --host=0.0.0.0 --port=8000
+```
+
+List existing classifier models (name, type, training start time and tag string)
+```
+http://127.0.0.1:8080/get_images_in_tag_score_range?model_name=model-ovr-logistic-regression-tag-not-pixel-art&score_gte=0.9&score_lte=1.0
+```
+
