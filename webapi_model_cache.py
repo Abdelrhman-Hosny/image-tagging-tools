@@ -2,7 +2,7 @@ import argparse
 import json
 from flask import Flask, request
 
-from api_model_cache import ModelCache
+from model_cache import ModelCache
 
 
 '''Model Cache Web API'''
@@ -11,9 +11,11 @@ from api_model_cache import ModelCache
 app = Flask(__name__)
 
 @app.route('/get_images_in_tag_score_range')
-def get_model_dict():
+def get_files_dict():
     '''
-    Returns models dictionary for model pickle file in given models_path
+    Returns list of file names for specific model_name and score score_gte <= score <= score_lte 
+    from classification / score cache.
+
     Example http request: 
     http://127.0.0.1:8080/get_images_in_tag_score_range?model_name=model-ovr-logistic-regression-tag-not-pixel-art
     '''
@@ -56,7 +58,7 @@ def get_model_dict():
         else:
             score_lte = 1.0
 
-        _, files_dict = model_cache.get_img_from_model_cache(model_name=model_name, score_gte=score_gte, score_lte=score_lte)
+        _, files_dict = model_cache.get_img_from_score_cache(model_name=model_name, score_gte=score_gte, score_lte=score_lte)
 
         print(json.dumps(files_dict, indent=2))
         return (json.dumps(files_dict, indent=2))
