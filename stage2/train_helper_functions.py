@@ -53,7 +53,7 @@ def load_json(json_file_path:str):
         return json_dict
       
       except Exception as e : # handles any exception of the json file
-        print(f"[ERROR] Problem loading {json_file_path} the json file")
+        print(f"[ERROR] Problem loading {json_file_path}")
         return None
     else:
       return None
