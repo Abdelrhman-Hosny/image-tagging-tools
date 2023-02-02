@@ -536,7 +536,9 @@ def get_single_tag_score(
   try:    
     image_features = clip_image_features(img, img_file_name, clip_model,preprocess,device) # Calculate image features.
     for model_name in model_dict:
-      image_class_prob = classify_image_prob(image_features, model_dict[model_name]) # get the probability list
+      # Take the classifier from model
+      classifier = model_dict[model_name]['classifier']
+      image_class_prob = classify_image_prob(image_features, classifier) # get the probability list
     return image_class_prob[0]
 
   except Exception as e :
