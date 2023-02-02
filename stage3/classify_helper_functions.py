@@ -464,7 +464,7 @@ def classify_single_model_to_bin(
       # Take the classifier from model
       classifier = model['classifier']
 
-      image_class_prob     = classify_image_prob(image_features, classifier,torch_model=torch_model) # get the probability list
+      image_class_prob     = classify_image_prob(image_features, classifier, torch_model=torch_model) # get the probability list
       model_type, tag_name = get_model_tag_name(model_name) 
       tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
 
@@ -669,10 +669,3 @@ class FolderFilter:
               files_list.append(file_path)
         
         return files_list
-
-      
-
-
-
-
-
