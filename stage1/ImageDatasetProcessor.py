@@ -341,7 +341,8 @@ class ImageDatasetProcessor:
                                         hash_id
                                         )
                 
-        thread_pool.shutdown() #make sure all threads were terminated. 
+        thread_pool.shutdown() #make sure all threads were terminated.
+        print("[INFO] Finished.")
 
     @staticmethod
     def process(
@@ -458,4 +459,4 @@ def process_image_dataset_cli(
 if __name__ == "__main__": 
     
     fire.Fire(process_image_dataset_cli)
-    print("[INFO] Finished.")
+    #print("[INFO] Finished.")
