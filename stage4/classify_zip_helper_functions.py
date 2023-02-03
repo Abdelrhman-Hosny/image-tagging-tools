@@ -539,7 +539,7 @@ def get_single_tag_score(
       # Take the classifier from model
       classifier = model_dict[model_name]['classifier']
       image_class_prob = classify_image_prob(image_features, classifier) # get the probability list
-    return image_class_prob[0]
+    return image_class_prob
 
   except Exception as e :
     print(f"[ERROR] {e} in file {os.path.basename(img_file_name)}")
