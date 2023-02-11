@@ -7,7 +7,7 @@ from datetime import datetime
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from logistic_regression_pytorch import LogisticRegressionPytorch
-from train_helper_functions import *
+from stage2.train_helper_functions import *
 
 
 warnings.filterwarnings('ignore')
