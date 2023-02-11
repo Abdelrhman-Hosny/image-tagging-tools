@@ -8,7 +8,7 @@ import open_clip
 import torch
 import numpy as np
 from PIL import Image
-from ImageDatasetLoader import ImageDatasetLoader
+from stage1.ImageDatasetLoader import ImageDatasetLoader
 import hashlib
 import json 
 import fire
@@ -224,7 +224,7 @@ class ImageDatasetProcessor:
         images_loader = None
         #load the image dataset. 
         try: 
-            images_loader = ImageDatasetLoader.load(dataset_path, tagged_dataset, recursive = True, batch_size = batch_size)
+            images_loader = ImageDatasetLoader.load(dataset_path, output_folder, tagged_dataset, recursive = True, batch_size = batch_size)
         except AssertionError as error: 
             print(f"[Error] in dataset: {dataset_name} due to the error: {error}")
     
