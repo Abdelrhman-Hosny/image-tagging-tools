@@ -1,9 +1,9 @@
 import sys
-
-from stage1.ImageDatasetProcessor import ImageDatasetProcessor
+import os
+from tqdm import tqdm 
+from stage1 import ImageDatasetProcessor
 from stage2.train import main as train_main
-from stage4.classify_zip import main as classify_main_zip, zip_gen
-from stage4.classify_zip_helper_functions import *
+from stage4.classify_zip import main as classify_main_zip, zip_gen, list_models, get_clip, create_models_dict, get_single_tag_score
 
 tagged_dataset_path = '/Volumes/docker/mega/KCG/dataset/pixel-art-tagged-v3.zip'
 dataset_path = '/Volumes/docker/processing_folder/test-tagging/untagged'
@@ -22,7 +22,7 @@ batch_size = 32
 num_threads = 4
 device = None
 
-ImageDatasetProcessor.process_dataset(
+ImageDatasetProcessor.ImageDatasetProcessor.process_dataset(
     tagged_dataset_path, 
     output_folder,
     tagged_dataset, 
@@ -85,8 +85,15 @@ clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrain
 model_dict = create_models_dict(tag_model_path)
 print (model_dict)
 
+zip_files = []
+# Walking thru files
+for root, dirs, files in os.walk(folder_path):
+    for file in files:
+        if file.lower().endswith(('.zip')):
+            zip_files.append(os.path.join(root, file))
+  
 # Loop through each zip file.
-for file in [folder_path]:
+for file in tqdm(zip_files):
     # Generating images
     for img, img_file_name in zip_gen(file):
         # Calculate score
