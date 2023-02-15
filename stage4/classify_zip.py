@@ -123,7 +123,7 @@ def main(
 
     # Get CLIP model, to calculate CLIP embeddings if it's not in .json metadata file.
     clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
-    model_path  = os.path.join('output','models') if model_path is None else model_path
+    model_path  = os.path.join(output_dir,'models')
     models_dict = create_models_dict(model_path)
     bins_array  = get_bins_array(bins_number) 
 
@@ -161,7 +161,7 @@ def main(
     Creating database and table for writing file info, model and classification result.
     '''
     
-    db_out_dir = './output'
+    db_out_dir = output_dir
     #make sure result output path exists 
     os.makedirs(db_out_dir, exist_ok = True)
     DATABASE_NAME = '/zip_score_cache.sqlite'
