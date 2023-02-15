@@ -8,10 +8,10 @@ from stage4.classify_zip import main as classify_main_zip, zip_gen, list_models,
 tagged_dataset_path = '/Volumes/docker/mega/KCG/dataset/pixel-art-tagged-v3.zip'
 dataset_path = '/Volumes/docker/processing_folder/test-tagging/untagged'
 output_folder = '/Volumes/docker/processing_folder/test-tagging/output'
-output_models_path = '/Volumes/docker/processing_folder/test-tagging/output/'
-metadata_json_path = '/Volumes/docker/processing_folder/test-tagging/output/input-metadata.json' 
-tag_to_hash_json = '/Volumes/docker/processing_folder/test-tagging/output/input-tag-to-image-hash-list.json'
-tag_model_path     = '/Volumes/docker/processing_folder/test-tagging/output/models/model-ovr-svm-tag-pos-video-game-side-scrolling.pkl'
+
+output_models_path = output_folder
+metadata_json_path = os.path.join(output_folder, 'input-metadata.json')
+tag_to_hash_json = os.path.join(output_folder, 'input-tag-to-image-hash-list.json')
 
 # Stage 1: Preprocess dataset
 # Specify the path to the dataset in tagged_dataset_path variable
@@ -48,21 +48,6 @@ train_main(
 
 list_models(output_models_path) # listing all the models we have for classification. 
 
-# Stage 3: Classify data for non zip folder
-# data_path    = '../path/to/image/data/folder/'
-# output_dir     = './output/classification_all_images_all_models'
-# json_file_path = './output/input-metadata.json'
-# bins_number    = 10
-# # Specify path to folder containing all models in model_path variable
-# model_path     = output_models_path
-# classify_main(
-#         folder_path    = data_path, 
-#         output_dir     = output_dir, 
-#         json_file_path = json_file_path, 
-#         bins_number    = bins_number, 
-#         model_path     = model_path, 
-#         )
-
 # Stage 4: Classify data for zip folder
 data_path    = dataset_path
 output_dir     = output_folder
@@ -78,26 +63,3 @@ classify_main_zip(
         bins_number    = bins_number, 
         model_path     = model_path, 
         )
-
-# Get single tag score
-folder_path    = dataset_path
-clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
-model_dict = create_models_dict(tag_model_path)
-print (model_dict)
-
-zip_files = []
-# Walking thru files
-for root, dirs, files in os.walk(folder_path):
-    for file in files:
-        if file.lower().endswith(('.zip')):
-            zip_files.append(os.path.join(root, file))
-  
-# Loop through each zip file.
-for file in tqdm(zip_files):
-    # Generating images
-    for img, img_file_name in zip_gen(file):
-        # Calculate score
-        score = get_single_tag_score(img, img_file_name, model_dict, clip_model, preprocess, device)
-        print (f'[INFO] Score: {score}')
-
-print("[INFO] Finished.")
