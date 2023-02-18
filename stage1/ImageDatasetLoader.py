@@ -59,7 +59,7 @@ class ImageDatasetLoader:
         
         
     @staticmethod
-    def __extract_archive(path: str) -> str: 
+    def __extract_archive(path: str, tmp_path: str) -> str: 
         """method to decompress an archive given its path. 
         
         :param path: The archive path to decompress. 
@@ -74,7 +74,8 @@ class ImageDatasetLoader:
         
         output_path = f"{file_name}-decompressed-tmp"
         
-        output_directory = os.path.join('./outputs/tmp' , output_path)
+        output_directory = os.path.join(tmp_path, 'tmp')
+        output_directory = os.path.join(output_directory, output_path)
         
         #make sure the output dir is found or else create it. 
         os.makedirs(output_directory, exist_ok = True)
@@ -89,7 +90,7 @@ class ImageDatasetLoader:
         """Delets the GIF and change it with first frame .png image
         :param gif_path: path to the GIF file.
         :type gif_path: str
-        :rtype: None
+        :rtype: str
         """
         im = Image.open(gif_path)
         dir_path = os.path.dirname(os.path.abspath(gif_path))
@@ -101,6 +102,8 @@ class ImageDatasetLoader:
         os.remove(gif_path)
         #os.system(f'rm -r {gif_path}') # Delete the .gif file 
 
+        return save_path
+
     @staticmethod
     def check_file(file_path: str):
         """This function takes a file path and see if it is supported or not. 
@@ -109,7 +112,7 @@ class ImageDatasetLoader:
         """
         if file_path.lower().endswith('.gif'): # If it's GIF then convert to image and exit 
             try : 
-                ImageDatasetLoader.convert_gif_to_image(file_path)
+                return ImageDatasetLoader.convert_gif_to_image(file_path)
             except Exception as e:
                 print(f"[WARNING] problem with {file_path}, {e}")
             if os.path.exists(file_path):
@@ -125,32 +128,41 @@ class ImageDatasetLoader:
         :param only_sub_dir: an option to make it only sub directories 
                             for ex: in cleaning pixel-art-tagged folder.
         :type only_sub_dir: bool
-        :rtype: None
+        :rtype: list[str]
         """
         
+        cleaned_path = []
         for dir in os.listdir(dir_path):
             sub_dir = os.path.join(dir_path, dir)
             
             if os.path.isfile(sub_dir): # It is a file. Check and break if it is outside of tag folder
                 if only_sub_dir: 
                     '''RV: Deletion codes are removed since it should not delete anything. Prompt error instead'''
-                    raise Exception (f'[ERROR: Input dataset contains file outside of tag folder: {sub_dir}]')
+                    # raise Exception (f'[ERROR: Input dataset contains file outside of tag folder: {sub_dir}]')
+                    continue
 
-                ImageDatasetLoader.check_file(sub_dir)
+                save_path = ImageDatasetLoader.check_file(sub_dir)
+                if save_path != None:
+                    cleaned_path.append(save_path)
                 continue
 
             if len(os.listdir(sub_dir)) == 0: # Empty folder
                 '''RV: Deletion codes are removed since it should not delete anything. Prompt error instead'''
-                raise Exception (f'[ERROR]: Input dataset contains empty folder: {sub_dir}]')
+                # raise Exception (f'[ERROR]: Input dataset contains empty folder: {sub_dir}]')
+                continue
 
             if os.path.isdir(sub_dir) and only_sub_dir: # move to the sub-directory and clean it.
-                ImageDatasetLoader.clean_directory(sub_dir)
+                sub_dir_cleaned_path = ImageDatasetLoader.clean_directory(sub_dir)
+                cleaned_path.extend(sub_dir_cleaned_path)
             else:
                 '''RV: Deletion codes are removed since it should not delete anything. Prompt error instead'''
-                raise Exception ('[ERROR]: Dataset format is possible invalid...]')
+                # raise Exception ('[ERROR]: Dataset format is possible invalid...]')
+                continue
+
+        return cleaned_path
 
     @staticmethod
-    def load(dataset_path: str, tagged_dataset: bool = True,  recursive: bool = True, batch_size: int = 32): 
+    def load(dataset_path: str, tmp_path:str, tagged_dataset: bool = True, recursive: bool = True, batch_size: int = 32): 
         """loader for the given dataset path, it returns a generator 
         
         :param dataset_path: path of the dataset either it's an archive or a directory of images.
@@ -166,18 +178,22 @@ class ImageDatasetLoader:
         
         archive_dataset = False 
         image_dataset_folder_path = dataset_path 
+        dataset_files_paths = []
         # if the given path is a path of an archive. 
         if ImageDatasetLoader.__is_archive(dataset_path):
             archive_dataset = True 
-            image_dataset_folder_path = ImageDatasetLoader.__extract_archive(dataset_path)
+            image_dataset_folder_path = ImageDatasetLoader.__extract_archive(dataset_path, tmp_path)
+
             print("is archive dataset")
             print(f"dataset folder path  = {image_dataset_folder_path}")
         
+        dataset_files_paths = ImageDatasetLoader.__list_dir(image_dataset_folder_path, recursive)
+
         if tagged_dataset: 
             #clean the dataset
-            ImageDatasetLoader.clean_directory(image_dataset_folder_path, only_sub_dir=True)
+            dataset_files_paths = ImageDatasetLoader.clean_directory(image_dataset_folder_path, only_sub_dir=True)
         #get all tags in the dataset. 
-        tags = [tag.lower() for tag in os.listdir(image_dataset_folder_path)]
+        # tags = [tag.lower() for tag in dataset_folder_dir_list]
         
         #make sure other-training and other-validation tags are available. 
         
@@ -194,7 +210,6 @@ class ImageDatasetLoader:
 #            raise AssertionError(error)
             
         
-        dataset_files_paths = ImageDatasetLoader.__list_dir(image_dataset_folder_path, recursive)
         #loop over the files list of the folder. 
         
         for chunk_pos in range(0, len(dataset_files_paths), batch_size):
