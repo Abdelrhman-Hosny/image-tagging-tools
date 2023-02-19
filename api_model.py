@@ -3,9 +3,48 @@ import joblib
 
 class ModelApi(object):
 
-    def get_models_dict(self, models_path):
+    def __init__(self, model_path='./output/models/') -> None:
+        self.model_path = model_path
+
+
+    def get_type_tag_pair(self):
+        '''Return list of type and tag pair from all models'''
+        type_tag_pair=[] # List for tag names
+
+        try:                   
+            for file in os.listdir(self.model_path):
+                model_pkl_path = os.path.join(self.model_path , file)
+                # Loading model object 
+                with open(model_pkl_path, 'rb') as model_file:
+                    model = joblib.load(model_file)
+                    type_tag_pair.append((model['model_type'], model['tag']))
+        except Exception as e:
+            print (f'[ERROR] {e}: Failed getting models')
+        
+        return type_tag_pair
+
+
+    def get_model_by_type_tag(self, model_type, tag):
+        '''Return specific model dict based on given model_type and tag'''
+        model=None
+
+        try:                   
+            for file in os.listdir(self.model_path):
+                model_pkl_path = os.path.join(self.model_path , file)
+                # Loading model object 
+                with open(model_pkl_path, 'rb') as model_file:
+                    model = joblib.load(model_file)
+                    if model['model_type']==model_type and model['tag']==tag:
+                        return model
+        except Exception as e:
+            print (f'[ERROR] {e}: Failed getting model')
+        
+        return model
+        
+    
+    def get_models_dict(self):
         '''
-        Returns models dictionary for model pickle file in given models_path.
+        Returns models dictionary for all model pickle file
 
         Example stucture of models_dict
         {<model_name>: 
@@ -16,29 +55,19 @@ class ModelApi(object):
             }
         }
         '''
-
         models_dict={} # Dictionary for all the models objects
         
         try:
-            if os.path.isfile(models_path):
-                if models_path.endswith('.pkl'):
-                    # If it was just a single model file    
-                    model_name = os.path.splitext(os.path.split(models_path)[-1])[0]
-                    # Loading model object 
-                    with open(models_path, 'rb') as model:
-                        models_dict[model_name] = joblib.load(model)
-        
-            else:
-                # If it was a folder of all the models                      
-                for model_file in os.listdir(models_path):
-                    if not model_file.endswith('pkl'):
-                        # Not a model, skip it
-                        continue
-                    model_pkl_path = os.path.join(models_path , model_file)
-                    model_name = os.path.splitext(model_file)[0]
-                    # Loading model object 
-                    with open(model_pkl_path, 'rb') as model:
-                        models_dict[model_name] = joblib.load(model)
+            # If it was a folder of all the models                      
+            for file in os.listdir(self.model_path):
+                if not file.endswith('pkl'):
+                    # Not a model, skip it
+                    continue
+                model_pkl_path = os.path.join(self.model_path , file)
+                model_name = os.path.splitext(file)[0]
+                # Loading model object 
+                with open(model_pkl_path, 'rb') as model_file:
+                    models_dict[model_name] = joblib.load(model_file)
                         
             return models_dict
 
