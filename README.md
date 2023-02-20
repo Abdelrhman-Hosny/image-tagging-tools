@@ -84,13 +84,12 @@ In addition, the SQLite database named `score_cache.sqlite` with table named `sc
 ## Example Usage
 
 ```
-python ./stage3/classify.py --metadata_json=./output/input-metadata.json --directory=/path/to/images/dir
+python ./stage3/classify.py --directory=./path/to/images/dir --metadata_json=./output/input-metadata.json --model_type=ovr-logistic-regression --tag=pos-character
 ```
 Or
 
 ```
-python ./stage3/classify.py --metadata_json=./output/input-metadata.json --directory=./path/to/images/dir --output=./output --output_bins=10 --model=./output/models
-
+python ./stage3/classify.py --directory=./path/to/images/dir --metadata_json=./output/input-metadata.json --output=./output --output_bins=10 --model_type=ovr-logistic-regression --tag=pos-character
 ```
 
 > Note that if the `output` folder is not present, the script automatically creates it for you. 
@@ -101,7 +100,8 @@ Also you may call `--help` to see the options and their defaults in the cli.
 * `directory` _[string]_ - _[required]_ - The path to the test images folder. 
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file for CLIP embeddings. 
 * `output` _[string]_ - _[optional]_ - The path to the output directory for the inference results. 
-* `model` _[string]_ - _[optional]_ - The path to the models' .pkl files directory or single .pkl file model. If this is not specified, the script automatically use models in `./output/models` directory.
+* `model_type` _[string]_ - _[optional]_ - The type of the model (example: `ovr-logistic-regression`, `ovr-svm`, `torch-logistic-regression`).
+* `tag` _[string]_ - _[optional]_ - Tag string (example: `pos-character`, `pos-environmental-space`, etc).
 * `output_bins` _[int]_ - _[optional]_ -  The number of bins of the results for each model.
 
 
@@ -118,11 +118,11 @@ In addition, the SQLite database named `zip_score_cache.sqlite` with table named
 ## Example Usage
 
 ```
-python ./stage4/classify_zip.py --metadata_json=./output/input-metadata.json --directory=/path/to/images/dir
+python ./stage4/classify_zip.py --directory=./path/to/images/dir --metadata_json=./output/input-metadata.json --model_type=ovr-logistic-regression --tag=pos-character
 ```
 Or
 ```
-python ./stage4/classify_zip.py --metadata_json=./output/input-metadata.json --directory=./src/to/images/dir --output=./output --output_bins=10 --model=./output/models
+python ./stage4/classify_zip.py --directory=./path/to/images/dir --metadata_json=./output/input-metadata.json --output=./output --output_bins=10 --model_type=ovr-logistic-regression --tag=pos-character
 ```
 
 > Note that if the `output` folder is not present, the script automatically creates it for you. 
@@ -133,7 +133,8 @@ Also you may call `--help` to see the options and their defaults in the cli.
 * `directory` _[string]_ - _[required]_ - The path to the images folder or images .zip file. 
 * `metadata_json` _[string]_ - _[required]_ - The path to the metadata json file for CLIP embeddings. 
 * `output` _[string]_ - _[optional]_ - The path to the output directory for the inference results. 
-* `model` _[string]_ - _[optional]_ - The path to the models' .pkl files directory or single .pkl file model. If this is not specified, the script automatically use models in `./output/models` directory.
+* `model_type` _[string]_ - _[optional]_ - The type of the model (example: `ovr-logistic-regression`, `ovr-svm`, `torch-logistic-regression`)
+* `tag` _[string]_ - _[optional]_ - Tag string (example: `pos-character`, `pos-environmental-space`, etc).
 * `output_bins` _[int]_ - _[optional]_ -  The number of bins of the results for each model.
 
 
