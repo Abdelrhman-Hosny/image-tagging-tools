@@ -10,7 +10,8 @@ def main(
         output_dir: str,
         json_file_path: str, 
         bins_number: int, 
-        model_path: str, 
+        model_type: str, 
+        tag: str
         ):
     """main function to be running, calls other function.
 
@@ -64,17 +65,18 @@ def main(
         image_tagging_folder =  create_out_folder(base_dir = output_dir)
     print(f"[INFO] Output folder {image_tagging_folder}")
     
-    # Load the json file.
+    # Load the json file
     metadata_json_obj = load_json(json_file_path)
-    
     if metadata_json_obj is None:
         print("[WARNING] No json file loaded, calculating embeddings for every image.")
 
     # Get CLIP model, to calculate CLIP embeddings if it's not in .json metadata file.
     clip_model , preprocess , device = get_clip(clip_model_type= 'ViT-B-32',pretrained= 'openai')
-    dir_path    = os.path.dirname(os.path.realpath(__file__))
-    model_path  = os.path.join(output_dir,'models')
-    models_dict = create_models_dict(model_path)
+
+    # Getting model
+    classifier_model = get_classifier_model(model_type, tag)
+    
+    # Creating bin
     bins_array  = get_bins_array(bins_number) 
 
     out_json = {} # a dictionary for classification scores for every model.
@@ -84,7 +86,7 @@ def main(
 
         img_out_dict = classify_to_bin(
                                         img_file,
-                                        models_dict,
+                                        classifier_model,
                                         metadata_json_obj,
                                         image_tagging_folder,
                                         bins_array,
@@ -99,7 +101,6 @@ def main(
 
     save_json(out_json,image_tagging_folder) # save the output.json file
 
-       
     '''
     Database writing
     Creating database and table for writing json_result data from dataset
@@ -164,23 +165,22 @@ def main(
         file_path = out_json[key]['file_path']
         hash_id = out_json[key]['hash_id']
         model_outs = out_json[key]['classifiers_output']
-        for out in model_outs:
-            model_name = out['model_name']
-            model_type = out['model_type']
-            model_train_date = out['model_train_date']
-            tag = out['tag']
-            tag_score = out['tag_score']
-            __insert_data_into_database(
-                file_name,
-                file_path,
-                os.path.splitext(file_name)[-1],
-                hash_id,
-                model_name,
-                model_type,
-                model_train_date,
-                tag,
-                str(tag_score)
-                )
+        model_name = model_outs['model_name']
+        model_type = model_outs['model_type']
+        model_train_date = model_outs['model_train_date']
+        tag = model_outs['tag']
+        tag_score = model_outs['tag_score']
+        __insert_data_into_database(
+            file_name,
+            file_path,
+            os.path.splitext(file_name)[-1],
+            hash_id,
+            model_name,
+            model_type,
+            model_train_date,
+            tag,
+            str(tag_score)
+            )
 
     print("[INFO] Finished.")
 
@@ -190,8 +190,10 @@ if __name__ == '__main__':
     parser.add_argument('--directory'    , type=str, required=True , help="images directory or image file")
     parser.add_argument('--output'       , type=str, required=False , default=None)
     parser.add_argument('--metadata_json', type=str, required=False , default=None)
-    parser.add_argument('--model'        , type=str, required=False, default=None)
+    #parser.add_argument('--model'        , type=str, required=False, default=None)
     parser.add_argument('--output_bins'  , type=int  ,required=False , default=10)
+    parser.add_argument('--model_type'  , type=str  ,required=True)
+    parser.add_argument('--tag'  , type=str  ,required=True)
 
     args = parser.parse_args()
 
@@ -201,5 +203,6 @@ if __name__ == '__main__':
         output_dir     = args.output, 
         json_file_path = args.metadata_json, 
         bins_number    = args.output_bins,
-        model_path     = args.model
+        model_type = args.model_type, 
+        tag = args.tag
         ) 

@@ -16,6 +16,7 @@ import numpy as np
 import io
 import datetime
 #from model_pytorch_logistic_regression_classifier import LogisticRegressionPytorch
+from api_model import ModelApi
 
 
 def save_json(
@@ -36,16 +37,16 @@ def save_json(
     with open(os.path.join(out_folder , "output.json"), "w") as outfile:
         outfile.write(json_object)
 
-def get_model_tag_name(model_file_name: str):
-    """ get the model type and tag name given model .pkl file name.
+# def get_model_tag_name(model_file_name: str):
+#     """ get the model type and tag name given model .pkl file name.
 
-    :param model_file_name: name of the .pkl file of the model.
-    :type model_file_name: str.
-    :return: a tuple of (model type , tag name)
-    :rtype: Tuple[str] 
-    """
-    # Get model name and tag from model's dict keys.
-    return model_file_name.split('-tag-')[0].split('model-')[1] , model_file_name.split('-tag-')[1] 
+#     :param model_file_name: name of the .pkl file of the model.
+#     :type model_file_name: str.
+#     :return: a tuple of (model type , tag name)
+#     :rtype: Tuple[str] 
+#     """
+#     # Get model name and tag from model's dict keys.
+#     return model_file_name.split('-tag-')[0].split('model-')[1] , model_file_name.split('-tag-')[1] 
 
 
 def find_bin(
@@ -229,6 +230,13 @@ def image_to_byte_array(image: Image) -> bytes:
     return imgByteArr
 
 
+def get_classifier_model(model_type, tag):
+  '''Return specific model based on given model_type and tag'''
+  # Model API opject
+  model_api = ModelApi()
+  return model_api.get_model_by_type_tag(model_type, tag)
+
+
 def create_models_dict(models_path:str):
     """take the path of the models' folder, load all of them in one dict
     :param models_path: path to the models pickle files path
@@ -351,26 +359,26 @@ def convert_gif_to_image(gif_path: str):
   return im 
 
 
-def list_models(model_folder_path: str):
-  """Listing all the models from a model's folder.
+# def list_models(model_folder_path: str):
+#   """Listing all the models from a model's folder.
 
-  :param model_folder_path: path to the folder having all the classification models.
-  :type model_folder_path: str
-  :rtype: None
-  """
-  models_dict = create_models_dict(model_folder_path)
-  models = {}
-  for model_name in models_dict:
-    model_type, tag_name = get_model_tag_name(model_name) 
+#   :param model_folder_path: path to the folder having all the classification models.
+#   :type model_folder_path: str
+#   :rtype: None
+#   """
+#   models_dict = create_models_dict(model_folder_path)
+#   models = {}
+#   for model_name in models_dict:
+#     model_type, tag_name = get_model_tag_name(model_name) 
     
-    if model_type not in models.keys():
-      models[model_type] = [tag_name]
-      continue
-    models[model_type].append(tag_name)
+#     if model_type not in models.keys():
+#       models[model_type] = [tag_name]
+#       continue
+#     models[model_type].append(tag_name)
 
-  for model_type in models:
-    for tag_name in models[model_type]:
-      print(f"model-type = {model_type}, tag= {tag_name}")
+#   for model_type in models:
+#     for tag_name in models[model_type]:
+#       print(f"model-type = {model_type}, tag= {tag_name}")
 
 
 
@@ -437,10 +445,10 @@ def classify_to_float(
 
   return classify_image_prob(image_features,model_dict[f"model-{model_name}-tag-{tag_name}"] ,torch_model=("torch" in model_name))
 
+
 def classify_single_model_to_bin(
                                   image_file_path: str,
                                   model,
-                                  model_name: str,
                                   image_features,
                                   bins_array: List[float],
                                   image_tagging_folder: str,
@@ -461,34 +469,42 @@ def classify_single_model_to_bin(
     """
     try :
 
-      # Take the classifier from model
+      # Retrieve the classifier
       classifier = model['classifier']
+      # Get the model type
+      model_type = model['model_type']
+      # Get the tag
+      tag = model['tag']
+      # Model name
+      model_name = f'{model_type}-tag-{tag}'
 
-      image_class_prob     = classify_image_prob(image_features, classifier, torch_model=torch_model) # get the probability list
-      model_type, tag_name = get_model_tag_name(model_name) 
-      tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
+      # Score
+      image_class_prob = classify_image_prob(image_features, classifier, torch_model=torch_model)
+      # Get the bins 
+      tag_bin, other_bin = find_bin(bins_array , image_class_prob) 
 
       # Find the output folder and create it based on model type , tag name 
-      tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag_name}',tag_bin])
+      tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag}',tag_bin])
     
       # Copy the file from source to destination 
       shutil.copy(image_file_path,tag_name_out_folder)
 
-      return  { 'model_name' : model_name,
-                'model_type' : model_type,
+      return  { 
+                'model_name': model_name,
+                'model_type': model_type,
                 'model_train_date' : model['train_start_time'].strftime('%Y-%m-%d, %H:%M:%S'),
-                'tag'   : tag_name,
+                'tag'   : tag,
                 'tag_score'   : image_class_prob
               }
 
     except Exception as e  :
-        print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_name}")
+        print(f"[ERROR] {e} in file {os.path.basename(image_file_path)} in model {model_type}-tag-{tag}")
         return None
       
 
 def classify_to_bin(
                     image_file_path: str,
-                    models_dict: dict,
+                    model: dict,
                     metadata_json_obj: dict,
                     image_tagging_folder: str,
                     bins_array: List[float],
@@ -516,39 +532,29 @@ def classify_to_bin(
   :type device: str
   """
   try:    
-
+    # Hash
     blake2b_hash = file_to_hash(image_file_path)
-    
+    # CLIP features
     try: 
       image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
     except:
       image_features = clip_image_features(image_file_path,clip_model,preprocess,device) # Calculate image features.
 
-    classes_list = [] # a list of dict for every class 
-
-    # loop through each model and find the classification of the image.
-    for model_name in models_dict:
-      model = models_dict[model_name]
-      torch_model = 'torch' in model_name
-      # model is a dict with the following structure
-      # {'classifier': <classifier>, 'model_type': <model_type>, 'train_start_time': <train_start_time>, 'tag': <tag_name>}
-      model_result_dict = classify_single_model_to_bin(
-                                                        image_file_path,
-                                                        model,
-                                                        model_name,
-                                                        image_features,
-                                                        bins_array,
-                                                        image_tagging_folder,
-                                                        torch_model=torch_model
-                                                        )
-      if model_result_dict is None:
-        continue
-
-      classes_list.append(model_result_dict)
+    torch_model = 'torch' in model['model_type']
+    # model is a dict with the following structure
+    # {'classifier': <classifier>, 'model_type': <model_type>, 'train_start_time': <train_start_time>, 'tag': <tag_name>}
+    model_result_dict = classify_single_model_to_bin(
+                                                      image_file_path,
+                                                      model,
+                                                      image_features,
+                                                      bins_array,
+                                                      image_tagging_folder,
+                                                      torch_model=torch_model
+                                                      )
 
     return {'hash_id'  :  blake2b_hash,
             'file_path': image_file_path,
-            'classifiers_output': classes_list}
+            'classifiers_output': model_result_dict}
 
   except Exception as e :
     print(f"[ERROR] {e} in file {os.path.basename(image_file_path)}")
