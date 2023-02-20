@@ -3,7 +3,7 @@ import os
 import sqlite3
 import time
 import numpy as np
-from classify_helper_functions import *
+from stage3.classify_helper_functions import *
 
 def main(
         folder_path: str, 
@@ -106,7 +106,7 @@ def main(
     Creating database and table for writing json_result data from dataset
     '''
     
-    db_out_dir = './output'
+    db_out_dir = output_dir
     #make sure result output path exists 
     os.makedirs(db_out_dir, exist_ok = True)
     DATABASE_NAME = '/score_cache.sqlite'

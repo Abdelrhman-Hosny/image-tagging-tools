@@ -4,7 +4,7 @@ import sqlite3
 import time
 from zipfile import ZipFile
 from PIL import Image
-from classify_zip_helper_functions import *
+from stage4.classify_zip_helper_functions import *
 
 zips_info = []
 
@@ -165,7 +165,7 @@ def main(
     Creating database and table for writing file info, model and classification result.
     '''
     
-    db_out_dir = './output'
+    db_out_dir = output_dir
     #make sure result output path exists 
     os.makedirs(db_out_dir, exist_ok = True)
     DATABASE_NAME = '/zip_score_cache.sqlite'
