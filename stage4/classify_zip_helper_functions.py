@@ -13,6 +13,7 @@ import json
 import hashlib
 import datetime
 import numpy as np
+from api_model import ModelApi
 
 def save_json(
               dict_obj,
@@ -212,6 +213,12 @@ def get_clip(clip_model_type : str = 'ViT-B-32' ,
 
       return clip_model , preprocess , device
 
+def get_classifier_model(model_type, tag):
+  '''Return specific model based on given model_type and tag'''
+  # Model API opject
+  model_api = ModelApi()
+  return model_api.get_model_by_type_tag(model_type, tag)
+
 def create_models_dict(models_path:str):
     """take the path of the models' folder, load all of them in one dict
     :param models_path: path to the models pickle files path
@@ -373,7 +380,6 @@ def classify_single_model_to_bin(
                                   img,
                                   img_file_name: str,
                                   model,
-                                  model_name: str,
                                   image_features,
                                   bins_array: List[float],
                                   image_tagging_folder: str,
@@ -394,25 +400,31 @@ def classify_single_model_to_bin(
     """
     try :
 
-      # Take the classifier from model
+      # Retrieve the classifier
       classifier = model['classifier']
+      # Get the model type
+      model_type = model['model_type']
+      # Get the tag
+      tag = model['tag']
+      # Model name
+      model_name = f'{model_type}-tag-{tag}'
 
+      # Score
       image_class_prob     = classify_image_prob(image_features, classifier, torch_model=torch_model) # get the probability list
-      model_type, tag_name = get_model_tag_name(model_name) 
+      # Get the bins 
       tag_bin, other_bin   = find_bin(bins_array , image_class_prob) # get the bins 
 
       # Find the output folder and create it based on model type , tag name 
-      tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag_name}',tag_bin])
+      tag_name_out_folder = make_dir([image_tagging_folder, f'{model_type}',f'{tag}',tag_bin])
     
       # Copy the file from source to destination 
       #shutil.copy(image_file_path,tag_name_out_folder)
       img.save(os.path.join(tag_name_out_folder, os.path.basename(img_file_name)))
 
-
       return  { 'model_name' : model_name,
                 'model_type' : model_type,
                 'model_train_date' : model['train_start_time'].strftime('%Y-%m-%d, %H:%M:%S'),
-                'tag'   : tag_name,
+                'tag'   : tag,
                 'tag_score'   : image_class_prob
               }
 
@@ -423,7 +435,7 @@ def classify_single_model_to_bin(
 def classify_to_bin(
                     img,
                     img_file_name: str,
-                    models_dict: dict,
+                    model: dict,
                     metadata_json_obj: dict,
                     image_tagging_folder: str,
                     bins_array: List[float],
@@ -451,83 +463,39 @@ def classify_to_bin(
   :type device: str
   """
   try:    
+    # Hash
     blake2b_hash = file_to_hash(img, img_file_name)
+    # CLIP features
     try : 
       image_features = np.array(metadata_json_obj[blake2b_hash]["embeddings_vector"]).reshape(1,-1) # et features from the .json file.
     except:
       image_features = clip_image_features(img, img_file_name, clip_model,preprocess,device) # Calculate image features.
 
-    classes_list = [] # a list of dict for every class 
-    # loop through each model and find the classification of the image.
-    for model_name in models_dict:
-        model = models_dict[model_name]
-        torch_model = 'torch' in model_name
-        model_result_dict = classify_single_model_to_bin(
-                                                          img,
-                                                          img_file_name,
-                                                          model,
-                                                          model_name,
-                                                          image_features,
-                                                          bins_array,
-                                                          image_tagging_folder,
-                                                          torch_model=torch_model
-                                                          )
-        if model_result_dict is None:
-          continue
-
-        classes_list.append(model_result_dict)
-
+    torch_model = 'torch' in model['model_type']
+    # model is a dict with the following structure
+    # {'classifier': <classifier>, 'model_type': <model_type>, 'train_start_time': <train_start_time>, 'tag': <tag_name>}
+    model_result_dict = classify_single_model_to_bin(
+                                                      img,
+                                                      img_file_name,
+                                                      model,
+                                                      image_features,
+                                                      bins_array,
+                                                      image_tagging_folder,
+                                                      torch_model=torch_model
+                                                      )
     return {'hash_id'  :  blake2b_hash,
             'file_path': img_file_name,
-            'classifiers_output': classes_list}
+            'classifiers_output': model_result_dict}
 
   except Exception as e :
     print(f"[ERROR] {e} in file {os.path.basename(img_file_name)}")
     return None 
 
-def classify_to_bin_no_json(
-                    img,
-                    img_file_name: str,
-                    models_dict: dict,
-                    image_tagging_folder: str,
-                    bins_array: List[float],
-                    clip_model,
-                    preprocess,
-                    device
-                    ):
-  try:    
-    blake2b_hash = file_to_hash(img, img_file_name)
-
-    image_features = clip_image_features(img, img_file_name, clip_model,preprocess,device) # Calculate image features.
-
-    classes_list = [] # a list of dict for every class 
-    # loop through each model and find the classification of the image.
-    for model_name in models_dict:
-        model_result_dict = classify_single_model_to_bin(
-                                                          img,
-                                                          img_file_name,
-                                                          models_dict[model_name],
-                                                          model_name,
-                                                          image_features,
-                                                          bins_array,
-                                                          image_tagging_folder)
-        if model_result_dict is None:
-          continue
-
-        classes_list.append(model_result_dict)
-
-    return {'hash_id'  :  blake2b_hash,
-            'file_path': img_file_name,
-            'classifiers_output': classes_list}
-
-  except Exception as e :
-    print(f"[ERROR] {e} in file {os.path.basename(img_file_name)}")
-    return None 
 
 def get_single_tag_score(
                     img,
                     img_file_name: str,
-                    model_dict: dict,
+                    model: dict,
                     clip_model,
                     preprocess,
                     device
@@ -535,10 +503,11 @@ def get_single_tag_score(
 
   try:    
     image_features = clip_image_features(img, img_file_name, clip_model,preprocess,device) # Calculate image features.
-    for model_name in model_dict:
-      # Take the classifier from model
-      classifier = model_dict[model_name]['classifier']
-      image_class_prob = classify_image_prob(image_features, classifier) # get the probability list
+    #for model_name in model_dict:
+    # Take the classifier from model
+    classifier = model['classifier']
+    torch_model = 'torch' in model['model_type']
+    image_class_prob = classify_image_prob(image_features, classifier, torch_model=torch_model) # get the probability list
     return image_class_prob
 
   except Exception as e :
@@ -561,7 +530,6 @@ def file_to_hash(img, img_file_name):
         print(f"[ERROR]  cannot compute hash for {img_file_name} , {e}")
         return None 
     return compute_blake2b(img)
-
 
 
 def empty_dirs_check(dir_path : str):
