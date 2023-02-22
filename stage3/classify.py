@@ -76,6 +76,11 @@ def main(
     # Getting model
     classifier_model = get_classifier_model(model_type, tag)
     
+    # If model not found then return
+    if classifier_model=={}:
+        print ('[INFO]: Model not found. No classification performed.')
+        return
+
     # Creating bin
     bins_array  = get_bins_array(bins_number) 
 
