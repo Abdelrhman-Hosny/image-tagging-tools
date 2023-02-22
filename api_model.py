@@ -7,6 +7,41 @@ class ModelApi(object):
         self.model_path = model_path
 
 
+    def get_model_types(self):
+        '''Return list of model types'''
+        model_types=[] # List of model types
+
+        try:                   
+            for file in os.listdir(self.model_path):
+                model_pkl_path = os.path.join(self.model_path , file)
+                # Loading model object 
+                with open(model_pkl_path, 'rb') as model_file:
+                    model = joblib.load(model_file)
+                    model_types.append(model['model_type'])
+        except Exception as e:
+            print (f'[ERROR] {e}: Failed getting model model types')
+        
+        return model_types
+
+
+    def get_tags_by_model_type(self, model_type):
+        '''Return tags based on given model_type'''
+        tags=[] # List of model tags
+
+        try:                   
+            for file in os.listdir(self.model_path):
+                model_pkl_path = os.path.join(self.model_path , file)
+                # Loading model object 
+                with open(model_pkl_path, 'rb') as model_file:
+                    model = joblib.load(model_file)
+                    if model['model_type']==model_type:
+                        tags.append(model['tag'])
+        except Exception as e:
+            print (f'[ERROR] {e}: Failed getting model')
+        
+        return tags
+
+
     def get_type_tag_pair(self):
         '''Return list of type and tag pair from all models'''
         type_tag_pair=[] # List for tag names
@@ -26,8 +61,6 @@ class ModelApi(object):
 
     def get_model_by_type_tag(self, model_type, tag):
         '''Return specific model dict based on given model_type and tag'''
-        model=None
-
         try:                   
             for file in os.listdir(self.model_path):
                 model_pkl_path = os.path.join(self.model_path , file)
@@ -39,7 +72,7 @@ class ModelApi(object):
         except Exception as e:
             print (f'[ERROR] {e}: Failed getting model')
         
-        return model
+        return {}
         
     
     def get_models_dict(self):
