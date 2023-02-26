@@ -1,9 +1,8 @@
 import os
-import io
 import random
 import hashlib
+import uuid
 import json
-import time
 import datetime
 import ipywidgets as widgets
 from IPython.display import display, clear_output
@@ -104,7 +103,7 @@ class QualityModelWidgets(object):
         file_dict_1 = {'hash': hash_1, 'file_path': file_path_1, 'file_name': file_name_1, 'img_bytes': img_bytes_1}
         file_dict_2 = {'hash': hash_2, 'file_path': file_path_2, 'file_name': file_name_2, 'img_bytes': img_bytes_2}
 
-        return (file_dict_1, file_dict_2)
+        return file_dict_1, file_dict_2
 
 
     def show_widgets(self, lbl_title, lbl_status, lbl_user, txt_user, lbl_task, txt_task, img_1, img_2, btn_select_1, btn_select_2, btn_skip, box_layout):
@@ -156,9 +155,6 @@ class QualityModelWidgets(object):
 
     def select_pressed(self, button):
 
-        # Currently displayed images
-        self.file_dict_1
-        self.file_dict_2
         # Increment step
         self.n += 1
 
@@ -200,14 +196,17 @@ class QualityModelWidgets(object):
 
 
     def save_to_json_file(self, selected, options, time_stamp, output_path):
+        # Unique ID
+        uid = str(uuid.uuid4())
         # JSON
-        out_json = {'user':self.txt_user.value, 'task': self.txt_task.value, 'selected_hash':selected['hash'], 'options': [options[0]['hash'], options[1]['hash']], 'timestamp':time_stamp}
+        out_json = {'uid': uid, 'taskname': self.txt_task.value, 'input_image1': options[0]['hash'], 'input_image2': options[1]['hash'], 'selected_image':selected['hash'], 'user':self.txt_user.value, 'timestamp':time_stamp}
         # Serializing json
-        json_object = json.dumps(out_json) #, indent=4)    
+        json_object = json.dumps(out_json, indent=4)    
         # Writing to output folder
         with open(output_path, "a") as outfile:
             outfile.write(json_object)
             outfile.write('\n')
+
 
 
 ''' Data dictionay craetor function'''
