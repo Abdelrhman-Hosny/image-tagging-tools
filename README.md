@@ -430,7 +430,7 @@ List existing classifier models (name, type, training start time and tag string)
 http://127.0.0.1:8080/get_images_in_tag_score_range?model_name=model-ovr-logistic-regression-tag-not-pixel-art&score_gte=0.9&score_lte=1.0
 ```
 
-# Model Quality App
+# Quality Model App
 
 An IPython-based app for quality model.
 
