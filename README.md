@@ -430,3 +430,10 @@ List existing classifier models (name, type, training start time and tag string)
 http://127.0.0.1:8080/get_images_in_tag_score_range?model_name=model-ovr-logistic-regression-tag-not-pixel-art&score_gte=0.9&score_lte=1.0
 ```
 
+# Model Quality App
+
+An IPython-based app for quality model.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/quality_model_app/quality_model_app.ipynb)
+
+Run the Quality Model App on google colab using the following [link](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/quality_model_app/quality_model_app.ipynb)

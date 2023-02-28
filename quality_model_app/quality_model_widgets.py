@@ -209,7 +209,7 @@ class QualityModelWidgets(object):
 
 
 
-''' Data dictionay craetor function'''
+''' Data dictionay creator function'''
 def create_input_data_dict(input_dir):
 
     # Placeholder for dict to contain result from running on data source.
