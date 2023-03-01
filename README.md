@@ -430,6 +430,14 @@ List existing classifier models (name, type, training start time and tag string)
 http://127.0.0.1:8080/get_images_in_tag_score_range?model_name=model-ovr-logistic-regression-tag-not-pixel-art&score_gte=0.9&score_lte=1.0
 ```
 
+# Using CLIP Vectors to Find Similar Images in Set of Images
+
+Example script of using CLIP vectors to find Similar images in set of images
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/examples/notebooks/image_clip_similarity.ipynb)
+
+Run the Quality Model App on google colab using the following [link](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/examples/notebooks/image_clip_similarity.ipynb)
+
 # Quality Model App
 
 An IPython-based app for quality model.
