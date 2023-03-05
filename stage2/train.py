@@ -95,8 +95,9 @@ def main(
             
             # put all lines for text file report in one .
             text_file_lines = [ f"model: {model_type}\n", "task: binary-classification\n",
-                                f"tag: [{tag}]\n\n", f"tag-set-image-count:   {len(tag_all_emb_list)} \n",
-                                f"other-set-image-count: {len(other_all_emb_list)} \n",
+                                f"tag: [{tag}]\n\n", f"total-tag-set-image-count:   {len(tag_all_emb_list)} \n",
+                                f"total-other-set-image-count: {len(other_all_emb_list)} \n",
+                                f'train-tag-image-count   : {len(tag_all_emb_list) - t_n}  \n',f'train-other-image-count : {len(other_all_emb_list) - o_n}  \n',
                                 f'validation-tag-image-count   : {t_n}  \n',f'validation-other-image-count : {o_n}  \n\n']
             text_file_lines.extend(calc_confusion_matrix(test_labels ,predictions, tag)) 
             text_file_lines.extend(histogram_lines(in_tag_tagged, 'in-distribution'))  
