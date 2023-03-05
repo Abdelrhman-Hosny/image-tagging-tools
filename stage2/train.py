@@ -6,6 +6,7 @@ import numpy as np
 from datetime import datetime
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
 from logistic_regression_pytorch import LogisticRegressionPytorch
 from stage2.train_helper_functions import *
 
@@ -60,14 +61,16 @@ def main(
 
         # get train test embeddings and labels.
         train_emb, train_labels, test_emb, test_labels , t_n , o_n = get_train_test(tag_all_emb_list, other_all_emb_list , test_per)
-        # ovr-logistic-regression , ovr-svm , torch-logistic-regression 
-        for model_type in ['ovr-logistic-regression' , 'ovr-svm', 'torch-logistic-regression' ]:
+        # ovr-logistic-regression , ovr-svm , torch-logistic-regression , gaussian_nb
+        for model_type in ['ovr-logistic-regression' , 'ovr-svm', 'torch-logistic-regression', 'gaussian_nb']:
             
             # make the classifer object 
             if model_type == 'ovr-logistic-regression':
                 classifier = LogisticRegression(random_state=0, multi_class='ovr') # initiate classifer object. 
             elif model_type == 'ovr-svm':
                 classifier = SVC(decision_function_shape='ovo' , probability = True)
+            elif model_type == 'gaussian_nb':
+                classifier = GaussianNB()
             else:
                 classifier = LogisticRegressionPytorch(input_dim = 512, output_dim=1)
             
@@ -84,6 +87,8 @@ def main(
                 # Evaluate the classifier 
                 predictions = classifier.predict(test_emb)
             
+            if model_type == 'gaussian_nb':
+                classifier = make_priors_equal(classifier)
             # get histogram data.
             in_tag_tagged  = histogram_list(np.array(tag_all_emb_list), classifier, other=False, using_torch=(model_type == 'torch-logistic-regression')) # histogram data for in-tag images 
             out_tag_tagged = histogram_list(np.array(other_val_all_emb_list), classifier,  other=True, using_torch=(model_type == 'torch-logistic-regression')) # histogram data for out-tag images
