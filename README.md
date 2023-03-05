@@ -445,3 +445,12 @@ An IPython-based app for quality model.
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/quality_model_app/quality_model_app.ipynb)
 
 Run the Quality Model App on google colab using the following [link](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/quality_model_app/quality_model_app.ipynb)
+
+
+# Examples for Downloading Data from Mega
+
+Different ways for downloading data from Mega.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/notebooks/mega_download_example.ipynb)
+
+Run the Quality Model App on google colab using the following [link](https://colab.research.google.com/github/kk-digital/image-tagging-tools/blob/main/notebooks/mega_download_example.ipynb)
