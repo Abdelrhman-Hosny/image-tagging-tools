@@ -2,6 +2,7 @@ import os
 import numpy as np
 from sklearn import metrics
 from typing import List, Tuple, Union
+from sklearn.naive_bayes import GaussianNB
 from ascii_graph import Pyasciigraph
 import joblib
 import json
@@ -365,4 +366,13 @@ def train_loop(
     
     return model
 
+
+def make_priors_equal(classifier: GaussianNB):
+    # When using the bayesian classifier, we usually have a small dataset
+    # that doesn't represent the actual distribution.
+    # So we assume that the likelihood of all classes equal
+    # so the model relies on feautres only for prediction
+    classifier.class_priors_ = np.array([1/len(classifier.class_count_) for _ in classifier.class_count_])
+
+    return classifier
 
