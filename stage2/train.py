@@ -72,7 +72,7 @@ def main(
             elif model_type == 'gaussian_nb':
                 classifier = GaussianNB()
             else:
-                classifier = LogisticRegressionPytorch(input_dim = 512, output_dim=1)
+                classifier = LogisticRegressionPytorch(output_dim=1)
             
             if model_type == 'torch-logistic-regression':
                 classifier = train_loop(model = classifier, train_emb=train_emb, train_labels=train_labels)
