@@ -118,6 +118,10 @@ class ImageDatasetLoader:
             if os.path.exists(file_path):
                 print(f"[WARNING] file {file_path} is not supported and will be ignored")
             return 
+        elif file_path.lower().endswith('.png') or \
+                file_path.lower().endswith('.jpg') or \
+                 file_path.lower().endswith('.jpeg'):
+          return file_path
 
     @staticmethod
     def clean_directory(dir_path: str, only_sub_dir: bool = False):
