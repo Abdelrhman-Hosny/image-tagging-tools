@@ -99,7 +99,7 @@ class ImageDatasetLoader:
         save_path = os.path.join(dir_path ,f'{im_file}.png' )
         im.save(save_path) # save the first frame as .png image 
         im.close()
-        os.remove(gif_path)
+        # os.remove(gif_path)
         #os.system(f'rm -r {gif_path}') # Delete the .gif file 
 
         return save_path
